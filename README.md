@@ -22,6 +22,7 @@ Setting up:
            "MaxAgeSeconds": 3000
        }
    ]
+   
 2. Create a file named .env for sensitive environment variables and fill it with following properties:
 
     WEB_SERVER_PORT=
