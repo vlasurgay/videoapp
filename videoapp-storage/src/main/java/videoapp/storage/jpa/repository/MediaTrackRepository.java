@@ -1,4 +1,11 @@
 package videoapp.storage.jpa.repository;
 
-public interface MediaTrackRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import videoapp.common.model.entity.MediaTrack;
+
+import java.util.List;
+
+public interface MediaTrackRepository extends JpaRepository<MediaTrack, Long> {
+
+    List<MediaTrack> findByVideoId(Long videoId);
 }

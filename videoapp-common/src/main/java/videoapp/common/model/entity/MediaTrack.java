@@ -1,10 +1,11 @@
-package videoapp.common.model.jpa;
+package videoapp.common.model.entity;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import videoapp.common.model.enums.TrackType;
+import videoapp.common.model.track.TrackMetadata;
 
 import java.time.Instant;
 
@@ -22,18 +23,17 @@ public class MediaTrack {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private TrackType type;
 
     @Column(nullable = false, length = 50)
     private String label;
 
-    @Column(name = "s3_key", nullable = false, length = 500)
-    private String s3Key;
+    @Column(name = "upload_key", nullable = false, length = 500)
+    private String uploadKey;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private JsonNode metadata;
+    private TrackMetadata metadata;
 
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;

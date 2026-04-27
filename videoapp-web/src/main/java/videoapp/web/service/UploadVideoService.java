@@ -1,141 +1,81 @@
 package videoapp.web.service;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.services.s3.model.AbortMultipartUploadResponse;
-import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadResponse;
-import software.amazon.awssdk.services.s3.model.CompletedPart;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedUploadPartRequest;
 import videoapp.common.model.dto.InitUploadRequest;
-import videoapp.common.model.jpa.UploadInfo;
-import videoapp.common.model.presign.S3CompletedBatch;
-import videoapp.common.model.presign.S3PresignedBatch;
-import videoapp.common.model.presign.S3PresignedUrl;
-import videoapp.common.utils.VideoUtils;
+import videoapp.common.model.dto.VideoConfigDto;
+import videoapp.common.model.entity.Video;
+import videoapp.common.model.enums.VideoQualityProfile;
+import videoapp.common.model.enums.VideoStatus;
+import videoapp.common.model.upload.MultipartUploadContext;
+import videoapp.common.model.upload.CompletedMultipartContext;
+import videoapp.common.utils.Utils;
 import videoapp.core.service.UploadInfoService;
-import videoapp.core.service.s.VideoFileService;
-import videoapp.storage.s3.S3PresignedUrlProvider;
-import videoapp.storage.s3.repository.S3Repository;
-import videoapp.web.config.WebProperties;
+import videoapp.core.service.VideoService;
+import videoapp.storage.api.PathResolver;
+import videoapp.storage.api.StorageProvider;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
-import static videoapp.common.Constants.ORIGINAL_VIDEO_FILE_TYPE;
-import static videoapp.common.utils.VideoUtils.ceil;
-import static videoapp.storage.s3.S3KeyResolver.buildTempVideoKey;
 
 @Service
-public class VideoService {
+public class UploadVideoService {
 
-    private final VideoFileService videoFileService;
+    private final VideoService videoService;
     private final UploadInfoService uploadInfoService;
-    private final S3Repository s3Repository;
-    private final S3PresignedUrlProvider s3PresignedUrlProvider;
-    private final WebProperties webProperties;
+    private final StorageProvider storageProvider;
+    private final PathResolver pathResolver;
 
-    public VideoService(VideoFileService videoFileService,
-                        UploadInfoService uploadInfoService,
-                        S3Repository s3Repository,
-                        S3PresignedUrlProvider s3PresignedUrlProvider,
-                        WebProperties webProperties) {
-        this.videoFileService = videoFileService;
+    public UploadVideoService(VideoService videoService, UploadInfoService uploadInfoService, StorageProvider storageProvider, PathResolver pathResolver) {
+        this.videoService = videoService;
         this.uploadInfoService = uploadInfoService;
-        this.s3Repository = s3Repository;
-        this.s3PresignedUrlProvider = s3PresignedUrlProvider;
-        this.webProperties = webProperties;
+        this.storageProvider = storageProvider;
+        this.pathResolver = pathResolver;
+    }
+
+    public VideoConfigDto getAvailableVideoConfig() {
+        List<String> availableQualityProfiles = Arrays.stream(VideoQualityProfile.values())
+                .map(profile -> Integer.toString(profile.getHeight()))
+                .toList();
+        return new VideoConfigDto(availableQualityProfiles);
     }
 
 
     @Transactional
-    public S3PresignedBatch initiateMultipartUpload(InitUploadRequest initUploadRequest) {
+    public MultipartUploadContext initiateMultipartUpload(InitUploadRequest initUploadRequest) {
         if (initUploadRequest.fileSizeBytes() <= 0) {
             throw new IllegalArgumentException("File size must be positive");
         }
+        String publicId = Utils.generateUniqueId();
+        String key = pathResolver.buildTempFileKey(publicId, initUploadRequest.fileName());
+        Instant createdAt = Instant.now();
 
-        String publicId = VideoUtils.generateUniqueId();
-        String key = buildTempVideoKey(publicId, initUploadRequest.fileName());
-        String uploadId = s3Repository.createMultipartUpload(key).uploadId();
-        int totalParts = ceil(initUploadRequest.fileSizeBytes(), webProperties.maxPartUploadSize());
+        MultipartUploadContext uploadContext = storageProvider.createMultipartUpload(key, initUploadRequest.fileSizeBytes());
 
-        Map<Integer, PresignedUploadPartRequest> presignedUpload = s3PresignedUrlProvider.presignMultipartUpload(key, uploadId, totalParts);
+        Video video = videoService.initiateVideo(publicId, initUploadRequest, createdAt);
+        uploadInfoService.initializeUploadInfo(video.getId(), uploadContext.uploadId(), key, uploadContext.expiresAt(), createdAt);
 
-        Instant expiresAt = presignedUpload.get(1).expiration();
-        Instant creationTime = expiresAt.minus(webProperties.awsPresignedUrlLifetimeSec(), ChronoUnit.SECONDS);
-
-        UploadInfo uploadInfo = enrichUploadInfo(publicId, key, uploadId, expiresAt, creationTime);
-
-        videoFileService.initiateVideoFile(uploadInfo);
-
-        List<S3PresignedUrl> presignedUrls = presignedUpload.entrySet().stream()
-                .map(entry -> fillUrl(entry.getKey(), entry.getValue()))
-                .toList();
-
-        return new S3PresignedBatch(uploadId, key, presignedUrls, expiresAt);
+        return uploadContext;
     }
+
 
     @Transactional
-    public ResponseEntity<Void> completeMultipartUpload(S3CompletedBatch completedBatch) {
-        List<CompletedPart> completedParts = completedBatch.eTags().stream()
-                .map(eTag -> CompletedPart.builder()
-                        .partNumber(eTag.partNumber())
-                        .eTag(eTag.eTag())
-                        .build()
-                )
-                .toList();
-
-        CompleteMultipartUploadResponse response = s3Repository.completeMultipartUpload(completedBatch.key(), completedBatch.uploadId(), completedParts);
-
-        if (response.sdkHttpResponse().isSuccessful() && Objects.nonNull(response.eTag())) {
-            uploadInfoService.updateUploadStatus(completedBatch.uploadId(), UploadStatus.PROCESSING);
-            return ResponseEntity.ok(null);
-        }
-        return ResponseEntity.badRequest().build();
+    public void completeMultipartUpload(CompletedMultipartContext completedMultipartContext) {
+        storageProvider.completeMultipartUpload(
+                completedMultipartContext.key(), completedMultipartContext.uploadId(), completedMultipartContext.uploadedParts()
+        );
+        videoService.updateVideoStatus(completedMultipartContext.uploadId(), VideoStatus.PROCESSING);
     }
+
 
     @Transactional
-    public ResponseEntity<Void> abortMultipartUpload(String key, String uploadId, String status) {
-        try {
-            AbortMultipartUploadResponse response = s3Repository.abortMultipartUpload(key, uploadId);
+    public void abortMultipartUpload(String key, String uploadId, String status) {
 
-            if (!response.sdkHttpResponse().isSuccessful()) {
-                return ResponseEntity.badRequest().build();
-            }
-
-            if (UploadStatus.CANCELLED.getStatus().equals(status) || UploadStatus.FAILED.getStatus().equals(status)) {
-                uploadInfoService.updateUploadStatus(uploadId, UploadStatus.valueOf(status));
-            }
-            return ResponseEntity.ok(null);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+        if (VideoStatus.ABORTED.equals(VideoStatus.valueOf(status)) || VideoStatus.FAILED.equals(VideoStatus.valueOf(status))) {
+            storageProvider.abortMultipartUpload(key, uploadId);
+            videoService.updateVideoStatus(uploadId, VideoStatus.valueOf(status));
         }
-    }
-
-    private UploadInfo enrichUploadInfo(String publicId, String key, String uploadId, long expiresAt, long creationTime) {
-        UploadInfo uploadInfo = new UploadInfo();
-        uploadInfo.setS3OriginKey(key);
-        uploadInfo.setUploadId(uploadId);
-        uploadInfo.setCreatedAt(creationTime);
-
-
-        return uploadInfo;
-    }
-
-    private S3PresignedUrl fillUrl(Integer partNumber, PresignedUploadPartRequest request) {
-        Map<String, String> headers = request.httpRequest().headers().entrySet().stream()
-                .collect(
-                        Collectors.toMap(
-                            Map.Entry::getKey,
-                            e -> e.getValue().isEmpty() ? "" : e.getValue().get(0)
-                        )
-                );
-
-        return new S3PresignedUrl(partNumber, request.url().toString(), headers);
     }
 }

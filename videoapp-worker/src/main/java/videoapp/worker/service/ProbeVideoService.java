@@ -1,56 +1,31 @@
-package videoapp.worker.processing.impl;
+package videoapp.worker.service;
 
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-import videoapp.common.model.dto.VideoMetadataDto;
-import videoapp.common.model.processing.VideoProcessingContext;
-import videoapp.core.service.s.VideoMetadataService;
-import videoapp.storage.s3.S3PresignedUrlProvider;
-import videoapp.worker.ffmpeg.FfprobeExecutor;
+import videoapp.common.model.dto.VideoMetadata;
+import videoapp.core.service.UploadInfoService;
+import videoapp.storage.api.StorageProvider;
+import videoapp.worker.integration.ffprobe.FfprobeClient;
 
-import videoapp.worker.ffmpeg.FfprobeParser;
-import videoapp.worker.processing.AbstractProcessor;
-
-@Order(2)
 @Component
-public class ProbeVideoProcessor implements AbstractProcessor {
+public class ProbeVideoService {
 
-    private final S3PresignedUrlProvider presignedUrlProvider;
-    private final FfprobeExecutor ffprobeExecutor;
-    private final FfprobeParser ffprobeParser;
-    private final VideoMetadataService videoMetadataService;
+    private final StorageProvider storageProvider;
+    private final FfprobeClient ffprobeClient;
+    private final UploadInfoService uploadInfoService;
 
-    public ProbeVideoProcessor(S3PresignedUrlProvider presignedUrlProvider, FfprobeExecutor ffprobeExecutor,
-                               FfprobeParser ffprobeParser, VideoMetadataService videoMetadataService) {
-        this.presignedUrlProvider = presignedUrlProvider;
-        this.ffprobeExecutor = ffprobeExecutor;
-        this.ffprobeParser = ffprobeParser;
-        this.videoMetadataService = videoMetadataService;
+    public ProbeVideoService(StorageProvider storageProvider, FfprobeClient ffprobeClient, UploadInfoService uploadInfoService) {
+        this.storageProvider = storageProvider;
+        this.ffprobeClient = ffprobeClient;
+        this.uploadInfoService = uploadInfoService;
     }
 
-    @Override
-    public boolean shouldExecute(VideoProcessingContext context) {
-        return context.getVideoMetadata() == null;
-    }
+    public VideoMetadata probe(Long videoId, String originKey) {
+        String originDownloadUrl = storageProvider.getObjectPresignedUrl(originKey);
 
-    @Override
-    public void execute(VideoProcessingContext context) {
-        String s3Key = context.getOriginS3Key();
-        String s3OriginDownloadUrl = presignedUrlProvider.presignGetObject(s3Key).url().toString();
+        VideoMetadata videoMetadata = ffprobeClient.probe(originDownloadUrl);
 
-        String jsonMetadata = ffprobeExecutor.execute(s3OriginDownloadUrl);
-        VideoMetadataDto videoMetadataDto = ffprobeParser.parse(jsonMetadata, context);
-        context.setVideoMetadata(videoMetadataDto);
+        uploadInfoService.updateByVideoId(videoId, uploadInfo -> uploadInfo.setBaseMetadata(videoMetadata));
 
-        videoMetadataService.upsertMetadata(videoMetadataDto);
-    }
-
-    private void defineTargetQualityProfiles(VideoProcessingContext context) {
-        VideoMetadataDto metadata = context.getVideoMetadata();
-        if (metadata != null) {
-            context.setTargetQualityProfiles(
-                    VideoQualityProfile.getProfilesForHeight(metadata.height())
-            );
-        }
+        return videoMetadata;
     }
 }

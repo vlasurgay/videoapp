@@ -1,20 +1,28 @@
-package videoapp.storage;
+package videoapp.storage.s3.impl;
 
-public class StoragePathResolver {
+import org.springframework.stereotype.Component;
+import videoapp.storage.api.PathResolver;
 
-    public static String buildTempFileKey(String publicId, String fileName) {
+@Component
+public class S3PathResolver implements PathResolver {
+
+    @Override
+    public String buildTempFileKey(String publicId, String fileName) {
         return String.format("temp/uploads/%s/%s", publicId, fileName);
     }
 
-    public static String buildSourceFileKey(String publicId, String fileName) {
+    @Override
+    public String buildSourceFileKey(String publicId, String fileName) {
         return String.format("videos/%s/source/%s", publicId, fileName);
     }
 
-    public static String buildSourceDirKey(String publicId) {
+    @Override
+    public String buildSourceDirKey(String publicId) {
         return String.format("videos/%s/source", publicId);
     }
 
-    public static String buildBaseHlsDirKey(String publicId) {
+    @Override
+    public String buildBaseHlsDirKey(String publicId) {
         return String.format("videos/%s/hls", publicId);
     }
 }

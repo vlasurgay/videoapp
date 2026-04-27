@@ -1,5 +1,5 @@
 services:
-  postgres:
+  videoapp-db:
     image: postgres:16
     restart: always
     container_name: videoapp-db
@@ -23,7 +23,7 @@ services:
     ports:
       - "5433:8080"
     depends_on:
-      - postgres
+      - videoapp-db
   videoapp-web:
     build:
       context: .
@@ -35,7 +35,21 @@ services:
       - "8080:8080"
       - "5005:5005"
     depends_on:
-      postgres:
+      videoapp-db:
         condition: service_healthy
+  videoapp-worker:
+    build:
+      context: .
+      target: videoapp-worker
+    env_file:
+      - .env
+    ports:
+      - "5006:5006"
+    image: videoapp-worker:latest
+    depends_on:
+      videoapp-db:
+        condition: service_healthy
+    deploy:
+      replicas: 1
 volumes:
   pgdata:

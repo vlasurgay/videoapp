@@ -1,4 +1,4 @@
-package videoapp.common.model.jpa;
+package videoapp.common.model.enums;
 
 public enum TrackType {
     AUDIO, VIDEO, SUBTITLE

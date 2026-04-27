@@ -1,4 +1,4 @@
-package videoapp.storage.s3.repository.impl;
+package videoapp.storage.s3.impl;
 
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -8,10 +8,10 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedUploadPartRequest;
 import software.amazon.awssdk.services.s3.presigner.model.UploadPartPresignRequest;
-import videoapp.common.model.presign.MultipartUploadContext;
-import videoapp.common.model.presign.S3PresignedUrl;
-import videoapp.common.model.presign.UploadedPart;
-import videoapp.storage.StorageProvider;
+import videoapp.common.model.upload.MultipartPresignedUrl;
+import videoapp.common.model.upload.MultipartUploadContext;
+import videoapp.common.model.upload.UploadedPart;
+import videoapp.storage.api.StorageProvider;
 import videoapp.storage.s3.config.S3Properties;
 
 import java.nio.file.Path;
@@ -39,7 +39,6 @@ public class S3StorageProvider implements StorageProvider {
         this.s3Properties = s3Properties;
         this.s3Presigner = s3Presigner;
     }
-
 
 
     @Override
@@ -127,7 +126,7 @@ public class S3StorageProvider implements StorageProvider {
         CreateMultipartUploadResponse multipartUploadResponse = s3Client.createMultipartUpload(initRequest);
 
         int totalParts = ceil(fileSize, s3Properties.maxPartUploadSize());
-        List<S3PresignedUrl> urls = IntStream.rangeClosed(1, totalParts)
+        List<MultipartPresignedUrl> urls = IntStream.rangeClosed(1, totalParts)
                 .mapToObj(partNum -> presignUploadPart(key, multipartUploadResponse.uploadId(), partNum))
                 .toList();
 
@@ -138,7 +137,7 @@ public class S3StorageProvider implements StorageProvider {
         );
     }
 
-    private S3PresignedUrl presignUploadPart(String key, String uploadId, int partNumber) {
+    private MultipartPresignedUrl presignUploadPart(String key, String uploadId, int partNumber) {
         UploadPartPresignRequest presignRequest = UploadPartPresignRequest.builder()
                 .signatureDuration(Duration.ofSeconds(s3Properties.presignedUrlLifetimeSec()))
                 .uploadPartRequest(b -> b
@@ -153,23 +152,8 @@ public class S3StorageProvider implements StorageProvider {
         Map<String, String> headers = presigned.httpRequest().headers().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
 
-        return new S3PresignedUrl(partNumber, presigned.url().toString(), headers);
+        return new MultipartPresignedUrl(partNumber, presigned.url().toString(), headers);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 //    @Override

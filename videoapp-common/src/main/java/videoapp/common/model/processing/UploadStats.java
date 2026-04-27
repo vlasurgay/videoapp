@@ -3,9 +3,9 @@ package videoapp.common.model.processing;
 import lombok.Data;
 
 @Data
-public class QualityStats {
+public class UploadStats {
     private long totalBytes;
-    private String playlistS3Key;
+    private String fileUploadKey;
 
     public void addBytes(long size) {
         this.totalBytes += size;

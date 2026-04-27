@@ -1,4 +1,4 @@
-package videoapp.common.model.entity;
+package videoapp.common.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -8,16 +8,19 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.util.List;
 
+import static videoapp.common.Constants.*;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class TargetSettings implements Serializable {
 
-    @JsonProperty("target_resolutions")
+    @JsonProperty(TARGET_RESOLUTIONS)
     private List<String> targetResolutions;
 
+    @JsonProperty(MUTED)
     private Boolean muted;
 
-    @JsonProperty("ai_subs")
+    @JsonProperty(AI_SUBS)
     private Boolean aiSubs;
 }

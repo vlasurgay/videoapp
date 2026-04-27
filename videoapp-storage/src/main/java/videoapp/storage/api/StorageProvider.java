@@ -1,7 +1,7 @@
-package videoapp.storage;
+package videoapp.storage.api;
 
-import videoapp.common.model.presign.MultipartUploadContext;
-import videoapp.common.model.presign.UploadedPart;
+import videoapp.common.model.upload.MultipartUploadContext;
+import videoapp.common.model.upload.UploadedPart;
 
 import java.nio.file.Path;
 import java.util.Collection;

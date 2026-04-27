@@ -1,13 +1,13 @@
-package vlsurhai.web.boot;
+package videoapp.web.boot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-import vlsurhai.common.config.BootConfiguration;
+import videoapp.common.config.BootConfiguration;
 
 @Import({ BootConfiguration.class })
-@ComponentScan(basePackages = { "vlsurhai.web", "vlsurhai.storage" })
+@ComponentScan(basePackages = { "videoapp.web", "videoapp.storage", "videoapp.core", "videoapp.common" })
 @SpringBootApplication
 public class WebApplication {
 

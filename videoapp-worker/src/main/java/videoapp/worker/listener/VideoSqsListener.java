@@ -1,9 +1,8 @@
-package videoapp.worker.eventlistener;
+package videoapp.worker.listener;
 
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import videoapp.common.model.processing.VideoProcessingContext;
 import videoapp.worker.preparation.VideoPreparationManager;
 
 import java.util.List;
@@ -24,15 +23,15 @@ public class VideoSqsListener {
     @SqsListener(value = "${aws.sqs.video-processing-queue}")
     public void onMessage(String jsonMessage) {
         try {
-            List<VideoProcessingContext> contexts = eventParser.parse(jsonMessage);
+            List<String> uploadUrls = eventParser.parse(jsonMessage);
 
-            if (contexts.isEmpty()) {
-                log.debug("No valid video processing contexts found in message");
+            if (uploadUrls.isEmpty()) {
+                log.debug("No valid upload url found in message");
                 return;
             }
 
-            for (VideoProcessingContext context : contexts) {
-                videoPreparationManager.process(context);
+            for (String uploadUrl : uploadUrls) {
+                videoPreparationManager.process(uploadUrl);
             }
         } catch (Exception e) {
             log.error("Critical error during SQS message processing");

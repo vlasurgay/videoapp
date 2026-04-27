@@ -1,5 +1,5 @@
-package videoapp.common.model.jpa;
+package videoapp.common.model.enums;
 
 public enum JobStatus {
-    PENDING, PROCESSING, COMPLETED, FAILED, ABORTED
+    PENDING, PROCESSING, RETRY_WAIT, COMPLETED, FAILED, ABORTED
 }

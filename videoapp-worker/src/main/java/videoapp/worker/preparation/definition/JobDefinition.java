@@ -1,13 +1,22 @@
-package videoapp.common.model.job;
+package videoapp.worker.preparation.definition;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import videoapp.common.model.dto.VideoMetadata;
 import videoapp.common.model.enums.JobType;
-import videoapp.common.model.entity.Video;
+import videoapp.common.model.processing.JobPlanningContext;
+
+import java.util.Collections;
+import java.util.List;
 
 public interface JobDefinition {
+
     JobType getType();
-    JobType dependsOn();
-    boolean isRequired(Video video, VideoMetadata metadata);
-    JsonNode buildPayload(Video video, VideoMetadata metadata);
+    JsonNode buildPayload(JobPlanningContext context);
+
+    default boolean isRequired(JobPlanningContext context) {
+        return true;
+    }
+
+    default List<JobType> dependsOn() {
+        return Collections.emptyList();
+    };
 }

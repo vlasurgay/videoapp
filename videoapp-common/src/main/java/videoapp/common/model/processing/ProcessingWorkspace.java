@@ -1,4 +1,4 @@
-package videoapp.common.utils;
+package videoapp.common.model.processing;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;

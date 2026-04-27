@@ -1,58 +1,86 @@
-package videoapp.worker.integration.ffmpeg;
+package videoapp.worker.service;
 
-import org.springframework.stereotype.Component;
-import videoapp.storage.s3.S3PresignedUrlProvider;
-import videoapp.storage.s3.http.HttpPresignedUrlUploader;
+import org.springframework.stereotype.Service;
+import videoapp.common.model.processing.UploadStats;
+import videoapp.storage.api.StorageProvider;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static videoapp.common.Constants.M3U8_EXTENSION;
-import static videoapp.common.Constants.TS_EXTENSION;
+import static videoapp.common.Constants.*;
 
-@Component
-public class SegmentUploader {
-    private final S3PresignedUrlProvider urlProvider;
-    private final HttpPresignedUrlUploader presignedUrlUploader;
+@Service
+public class UploadSegmentService {
+    private final StorageProvider storageProvider;
 
-    public SegmentUploader(S3PresignedUrlProvider urlProvider, HttpPresignedUrlUploader presignedUrlUploader) {
-        this.urlProvider = urlProvider;
-        this.presignedUrlUploader = presignedUrlUploader;
+    public UploadSegmentService(StorageProvider storageProvider) {
+        this.storageProvider = storageProvider;
     }
 
-    public void uploadFiles(Path rootDir, String baseS3Key, Supplier<Boolean> isRunning) {
+    public Map<String, UploadStats> uploadFiles(Path rootDir, String baseUploadKey, Supplier<Boolean> isRunning) {
+        Map<String, UploadStats> stats = new HashMap<>();
         do {
-            walkFiles(rootDir, baseS3Key, TS_EXTENSION);
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            walkFiles(rootDir, baseUploadKey, stats);
+            sleep();
         } while (isRunning.get());
-        walkFiles(rootDir, baseS3Key, TS_EXTENSION);
-        walkFiles(rootDir, baseS3Key, M3U8_EXTENSION);
+
+        walkFiles(rootDir, baseUploadKey, stats);
+
+        return stats;
     }
 
-    private void walkFiles(Path rootDir, String baseS3Key, String extension) {
+    private void walkFiles(Path rootDir, String baseUploadKey, Map<String, UploadStats> stats) {
         try (Stream<Path> stream = Files.walk(rootDir)) {
-            stream.filter(Files::isRegularFile)
-                    .filter(path -> path.toString().endsWith(extension))
-                    .forEach(file -> uploadSingleFile(rootDir, file, baseS3Key));
+            stream
+                    .filter(Files::isRegularFile)
+                    .filter(this::isFileCompleted)
+                    .forEach(file -> processFile(rootDir, file, baseUploadKey, stats));
+
         } catch (IOException ignored) {}
     }
 
-    private void uploadSingleFile(Path rootDirectory, Path file, String baseS3Key) {
+    private void processFile(Path rootDir, Path file, String baseUploadKey, Map<String, UploadStats> statsMap) {
         try {
-            String relativePath = rootDirectory.relativize(file).toString().replace("\\", "/");
-            String s3Key = baseS3Key + "/" + relativePath;
+            String relativePath = rootDir.relativize(file).toString().replace("\\", "/");
+            String uploadKey = String.format("%s/%s", baseUploadKey, relativePath);
+            String label = extractLabel(rootDir, file);
 
-            String url = urlProvider.presignPutObject(s3Key).url().toString();
-            presignedUrlUploader.upload(url, Files.readAllBytes(file));
+            storageProvider.putObject(uploadKey, file);
 
+            UploadStats stats = statsMap.computeIfAbsent(label, k -> new UploadStats());
+            stats.addBytes(Files.size(file));
+
+            if (isMainFile(file)) {
+                stats.setFileUploadKey(uploadKey);
+            }
             Files.deleteIfExists(file);
-        } catch (Exception ignored) {}
+        } catch (Exception e) {}
+    }
+
+    private String extractLabel(Path rootDir, Path file) {
+        Path relative = rootDir.relativize(file);
+        return relative.getNameCount() > 1 ? relative.getName(0).toString() : ORIGINAL;
+    }
+
+    private boolean isMainFile(Path file) {
+        String name = file.toString();
+        return name.endsWith(M3U8_EXTENSION) || name.endsWith(M4A_EXTENSION) || name.endsWith(MP3_EXTENSION);
+    }
+
+    private boolean isFileCompleted(Path file) {
+        return !file.toString().endsWith(TMP_EXTENSION);
+    }
+
+    private void sleep() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

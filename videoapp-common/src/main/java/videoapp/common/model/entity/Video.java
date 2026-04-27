@@ -1,10 +1,12 @@
-package videoapp.common.model.jpa;
+package videoapp.common.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
+import videoapp.common.model.dto.TargetSettings;
+import videoapp.common.model.enums.VideoStatus;
 
 import java.time.Instant;
 
@@ -35,17 +37,14 @@ public class Video {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VideoStatus status = VideoStatus.UPLOADING;
 
-    @Column(name = "s3_source_key", length = 500)
-    private String s3SourceKey;
+    @Column(name = "source_video_key", length = 500)
+    private String sourceVideoKey;
+
+    @Column(name = "source_audio_key", length = 500)
+    private String sourceAudioKey;
 
     @Column(name = "master_playlist_key", length = 500)
     private String masterPlaylistKey;
-
-    @Column(name = "separated_video_key", length = 500)
-    private String separatedVideoKey;
-
-    @Column(name = "separated_audio_key", length = 500)
-    private String separatedAudioKey;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "target_settings", columnDefinition = "jsonb")

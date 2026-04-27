@@ -1,9 +1,10 @@
-package videoapp.common.model.jpa;
+package videoapp.common.model.enums;
 
 public enum JobType {
     EXTRACT_AUDIO,
     TRANSCODE,
+    MOVE_SOURCE_VIDEO,
     GENERATE_SUBS,
-    PROBE_METADATA,
-    AI_DUBBING
+    AI_DUBBING,
+    GENERATE_MASTER_PLAYLIST
 }

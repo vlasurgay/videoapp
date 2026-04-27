@@ -1,4 +1,7 @@
-package videoapp.core.service;
+package videoapp.storage.jpa.repository;
 
-public interface USerRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import videoapp.common.model.entity.User;
+
+public interface UserRepository extends JpaRepository<User, Long> {
 }

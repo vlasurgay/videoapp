@@ -1,4 +1,10 @@
 package videoapp.worker.config;
 
-public class WorkerProperties {
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "videoapp.worker")
+public record WorkerProperties(
+        String temporalOutputDirectory,
+        int jobNextRetryDelaySec
+) {
 }

@@ -1,4 +1,9 @@
 package videoapp.common.model.track;
 
-public class SubtitleTrackMetadata {
+import lombok.Data;
+
+@Data
+public class SubtitleTrackMetadata extends TrackMetadata {
+    private String language;
+    private String codec;
 }

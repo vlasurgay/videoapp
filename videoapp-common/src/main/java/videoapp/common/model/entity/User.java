@@ -1,4 +1,4 @@
-package videoapp.common.model.jpa;
+package videoapp.common.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;

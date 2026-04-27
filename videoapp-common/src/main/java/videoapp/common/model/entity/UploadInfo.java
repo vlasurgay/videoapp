@@ -1,6 +1,5 @@
-package videoapp.common.model.jpa;
+package videoapp.common.model.entity;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -24,8 +23,8 @@ public class UploadInfo {
     @Column(name = "upload_id", nullable = false)
     private String uploadId;
 
-    @Column(name = "s3_origin_key", nullable = false, length = 500)
-    private String s3OriginKey;
+    @Column(name = "upload_origin_key", nullable = false, length = 500)
+    private String uploadOriginKey;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "base_metadata", columnDefinition = "jsonb")

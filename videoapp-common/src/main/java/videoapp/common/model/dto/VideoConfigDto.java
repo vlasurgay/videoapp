@@ -1,4 +1,8 @@
 package videoapp.common.model.dto;
 
-public record VideoConfigDto() {
+import java.util.List;
+
+public record VideoConfigDto(
+        List<String> availableResolutions
+) {
 }

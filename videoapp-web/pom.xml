@@ -31,6 +31,10 @@
       <groupId>vlsurhai.portfolio</groupId>
       <artifactId>videoapp-storage</artifactId>
     </dependency>
+    <dependency>
+      <groupId>vlsurhai.portfolio</groupId>
+      <artifactId>videoapp-core</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

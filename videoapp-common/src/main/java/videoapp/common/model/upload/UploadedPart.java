@@ -1,4 +1,4 @@
-package videoapp.common.model.presign;
+package videoapp.common.model.upload;
 
 
 public record UploadedPart(
