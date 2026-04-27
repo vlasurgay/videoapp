@@ -1,5 +1,6 @@
 package videoapp.worker.processor.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import videoapp.common.model.entity.MediaTrack;
 import videoapp.common.model.entity.ProcessingJob;
@@ -20,6 +21,7 @@ import static videoapp.common.Constants.*;
 import static videoapp.common.model.enums.JobType.GENERATE_MASTER_PLAYLIST;
 import static videoapp.common.utils.JsonNodeExtractor.extractString;
 
+@Slf4j
 @Component
 public class MasterPlaylistJobProcessor implements JobProcessor {
 
@@ -54,6 +56,8 @@ public class MasterPlaylistJobProcessor implements JobProcessor {
         storageProvider.putObject(uploadKey, masterPlaylistContent.getBytes(), APPLICATION_X_MPEGURL);
 
         videoService.updateMasterPlaylistKey(publicId, uploadKey);
+
+        log.info("Video processing successfully completed. Master playlist has been created, publicId={}", publicId);
     }
 
     private String buildMasterM3U8(List<MediaTrack> tracks) {

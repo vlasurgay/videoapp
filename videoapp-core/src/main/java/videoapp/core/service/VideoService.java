@@ -1,6 +1,7 @@
 package videoapp.core.service;
 
-import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import videoapp.common.model.dto.InitUploadRequest;
 import videoapp.common.model.entity.Video;
 import videoapp.common.model.enums.VideoStatus;
@@ -8,7 +9,8 @@ import videoapp.storage.jpa.repository.VideoRepository;
 
 import java.time.Instant;
 
-@Component
+@Slf4j
+@Service
 public class VideoService {
 
     private final VideoRepository videoRepository;

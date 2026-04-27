@@ -1,5 +1,6 @@
 package videoapp.core.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import videoapp.common.model.entity.MediaTrack;
 import videoapp.common.model.enums.TrackType;
@@ -8,6 +9,7 @@ import videoapp.storage.jpa.repository.MediaTrackRepository;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class MediaTrackService {
 

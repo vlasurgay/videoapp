@@ -34,7 +34,6 @@ public class VideoSqsListener {
                 videoPreparationManager.process(uploadUrl);
             }
         } catch (Exception e) {
-            log.error("Critical error during SQS message processing");
             throw new RuntimeException("Failed to process sqs video event", e);
         }
     }

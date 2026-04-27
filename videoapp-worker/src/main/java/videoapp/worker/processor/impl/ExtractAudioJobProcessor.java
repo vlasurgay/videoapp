@@ -1,5 +1,6 @@
 package videoapp.worker.processor.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import videoapp.common.model.entity.ProcessingJob;
 import videoapp.common.model.entity.Video;
@@ -23,6 +24,7 @@ import static videoapp.common.Constants.ORIGIN_VIDEO_KEY;
 import static videoapp.common.model.enums.JobType.EXTRACT_AUDIO;
 import static videoapp.common.utils.JsonNodeExtractor.extractString;
 
+@Slf4j
 @Component
 public class ExtractAudioJobProcessor implements JobProcessor {
 
@@ -69,6 +71,8 @@ public class ExtractAudioJobProcessor implements JobProcessor {
 
             UploadStats uploadedFileStat = retrieveSourceAudioKey(uploadStats);
             videoService.updateAudioSourceKey(video.getPublicId(), uploadedFileStat.getFileUploadKey());
+
+            log.debug("ExtractAudioJobProcessor succeed, publicId={}", video.getPublicId());
 
         } catch (IOException e) {
             throw new RuntimeException("FFmpeg extract audio failed", e);

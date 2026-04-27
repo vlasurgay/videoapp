@@ -1,6 +1,7 @@
 package videoapp.worker.processor.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import videoapp.common.model.dto.Resolution;
 import videoapp.common.model.entity.ProcessingJob;
@@ -20,7 +21,6 @@ import videoapp.worker.integration.ffmpeg.FfmpegCommandBuilder;
 import videoapp.worker.processor.JobProcessor;
 import videoapp.worker.service.UploadSegmentService;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +29,7 @@ import static videoapp.common.Constants.*;
 import static videoapp.common.model.enums.JobType.TRANSCODE;
 import static videoapp.worker.integration.ffmpeg.FfmpegCommandBuilder.Mode.HLS_VIDEO;
 
+@Slf4j
 @Component
 public class TranscodeJobProcessor implements JobProcessor {
 
@@ -72,6 +73,8 @@ public class TranscodeJobProcessor implements JobProcessor {
             }
 
             initMediaTracks(video.getId(), resolutions, uploadStats);
+
+            log.debug("TranscodeJobProcessor succeed, publicId={}", video.getPublicId());
 
         } catch (Exception e) {
             throw new RuntimeException("FFmpeg transcode failed", e);

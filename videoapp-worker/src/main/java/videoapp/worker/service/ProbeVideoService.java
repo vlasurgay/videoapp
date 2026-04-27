@@ -1,12 +1,12 @@
 package videoapp.worker.service;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import videoapp.common.model.dto.VideoMetadata;
 import videoapp.core.service.UploadInfoService;
 import videoapp.storage.api.StorageProvider;
 import videoapp.worker.integration.ffprobe.FfprobeClient;
 
-@Component
+@Service
 public class ProbeVideoService {
 
     private final StorageProvider storageProvider;

@@ -1,5 +1,6 @@
 package videoapp.web.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import videoapp.common.model.dto.InitUploadRequest;
@@ -20,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 
+@Slf4j
 @Service
 public class UploadVideoService {
 
@@ -57,6 +59,7 @@ public class UploadVideoService {
         Video video = videoService.initiateVideo(publicId, initUploadRequest, createdAt);
         uploadInfoService.initializeUploadInfo(video.getId(), uploadContext.uploadId(), key, uploadContext.expiresAt(), createdAt);
 
+        log.info("multipart upload created, uploadId={}", publicId);
         return uploadContext;
     }
 
@@ -67,6 +70,8 @@ public class UploadVideoService {
                 completedMultipartContext.key(), completedMultipartContext.uploadId(), completedMultipartContext.uploadedParts()
         );
         videoService.updateVideoStatus(completedMultipartContext.uploadId(), VideoStatus.PROCESSING);
+
+        log.debug("multipart upload completed, uploadId={}", completedMultipartContext.uploadId());
     }
 
 
@@ -76,6 +81,10 @@ public class UploadVideoService {
         if (VideoStatus.ABORTED.equals(VideoStatus.valueOf(status)) || VideoStatus.FAILED.equals(VideoStatus.valueOf(status))) {
             storageProvider.abortMultipartUpload(key, uploadId);
             videoService.updateVideoStatus(uploadId, VideoStatus.valueOf(status));
+            log.debug("multipart upload aborted with status={}, uploadId={}", status, uploadId);
+        } else {
+            log.warn("incorrect status to be aborted, provided status={}, uploadId={}", status, uploadId);
+
         }
     }
 }

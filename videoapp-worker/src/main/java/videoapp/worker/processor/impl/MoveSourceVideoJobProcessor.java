@@ -1,5 +1,6 @@
 package videoapp.worker.processor.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import videoapp.common.model.entity.ProcessingJob;
 import videoapp.common.model.enums.JobType;
@@ -14,6 +15,7 @@ import static videoapp.common.model.enums.JobType.MOVE_SOURCE_VIDEO;
 import static videoapp.common.utils.JsonNodeExtractor.extractString;
 import static videoapp.common.utils.UploadKeyUtils.extractFileNameFromUploadKey;
 
+@Slf4j
 @Component
 public class MoveSourceVideoJobProcessor implements JobProcessor {
 
@@ -44,5 +46,7 @@ public class MoveSourceVideoJobProcessor implements JobProcessor {
         storageProvider.copyObject(originKey, sourceFileKey);
 
         videoService.updateVideoSourceKey(publicId, sourceFileKey);
+
+        log.debug("MoveSourceVideoJobProcessor succeed, publicId={}", publicId);
     }
 }

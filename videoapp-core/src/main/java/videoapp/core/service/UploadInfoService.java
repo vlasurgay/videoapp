@@ -1,5 +1,6 @@
 package videoapp.core.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import videoapp.common.model.entity.UploadInfo;
 import videoapp.storage.jpa.repository.UploadInfoRepository;
@@ -7,6 +8,7 @@ import videoapp.storage.jpa.repository.UploadInfoRepository;
 import java.time.Instant;
 import java.util.function.Consumer;
 
+@Slf4j
 @Service
 public class UploadInfoService {
 
