@@ -12,7 +12,7 @@ import videoapp.common.model.upload.MultipartPresignedUrl;
 import videoapp.common.model.upload.MultipartUploadContext;
 import videoapp.common.model.upload.UploadedPart;
 import videoapp.storage.api.StorageProvider;
-import videoapp.storage.s3.config.S3Properties;
+import videoapp.storage.config.StorageProperties;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -31,12 +31,12 @@ public class S3StorageProvider implements StorageProvider {
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
-    private final S3Properties s3Properties;
+    private final StorageProperties storageProperties;
 
 
-    public S3StorageProvider(S3Client s3Client, S3Properties s3Properties, S3Presigner s3Presigner) {
+    public S3StorageProvider(S3Client s3Client, StorageProperties storageProperties, S3Presigner s3Presigner) {
         this.s3Client = s3Client;
-        this.s3Properties = s3Properties;
+        this.storageProperties = storageProperties;
         this.s3Presigner = s3Presigner;
     }
 
@@ -52,7 +52,7 @@ public class S3StorageProvider implements StorageProvider {
                 .toList();
 
         CompleteMultipartUploadRequest completeRequest = CompleteMultipartUploadRequest.builder()
-                .bucket(s3Properties.bucketName())
+                .bucket(storageProperties.s3BucketName())
                 .key(key)
                 .uploadId(uploadId)
                 .multipartUpload(CompletedMultipartUpload.builder().parts(awsParts).build())
@@ -64,7 +64,7 @@ public class S3StorageProvider implements StorageProvider {
     @Override
     public void abortMultipartUpload(String key, String uploadId) {
         s3Client.abortMultipartUpload(b -> b
-                .bucket(s3Properties.bucketName())
+                .bucket(storageProperties.s3BucketName())
                 .key(key)
                 .uploadId(uploadId)
         );
@@ -73,9 +73,9 @@ public class S3StorageProvider implements StorageProvider {
     @Override
     public void copyObject(String sourceKey, String destinationKey) {
         s3Client.copyObject(b -> b
-                .sourceBucket(s3Properties.bucketName())
+                .sourceBucket(storageProperties.s3BucketName())
                 .sourceKey(sourceKey)
-                .destinationBucket(s3Properties.bucketName())
+                .destinationBucket(storageProperties.s3BucketName())
                 .destinationKey(destinationKey)
         );
     }
@@ -83,9 +83,9 @@ public class S3StorageProvider implements StorageProvider {
     @Override
     public String getObjectPresignedUrl(String key) {
         GetObjectPresignRequest request = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofSeconds(s3Properties.presignedUrlLifetimeSec()))
+                .signatureDuration(Duration.ofSeconds(storageProperties.s3PresignedUrlLifetimeSec()))
                 .getObjectRequest(builder -> builder
-                        .bucket(s3Properties.bucketName())
+                        .bucket(storageProperties.s3BucketName())
                         .key(key)
                         .build())
                 .build();
@@ -97,7 +97,7 @@ public class S3StorageProvider implements StorageProvider {
     @Override
     public void putObject(String key, byte[] bytes, String contentType) {
         PutObjectRequest request = PutObjectRequest.builder()
-                .bucket(s3Properties.bucketName())
+                .bucket(storageProperties.s3BucketName())
                 .contentType(contentType)
                 .key(key)
                 .build();
@@ -108,7 +108,7 @@ public class S3StorageProvider implements StorageProvider {
     @Override
     public void putObject(String key, Path filePath) {
         PutObjectRequest request = PutObjectRequest.builder()
-                .bucket(s3Properties.bucketName())
+                .bucket(storageProperties.s3BucketName())
                 .key(key)
                 .contentType(resolveContentType(filePath))
                 .build();
@@ -119,29 +119,29 @@ public class S3StorageProvider implements StorageProvider {
     @Override
     public MultipartUploadContext createMultipartUpload(String key, long fileSize) {
         CreateMultipartUploadRequest initRequest = CreateMultipartUploadRequest.builder()
-                .bucket(s3Properties.bucketName())
+                .bucket(storageProperties.s3BucketName())
                 .key(key)
                 .build();
 
         CreateMultipartUploadResponse multipartUploadResponse = s3Client.createMultipartUpload(initRequest);
 
-        int totalParts = ceil(fileSize, s3Properties.maxPartUploadSize());
+        int totalParts = ceil(fileSize, storageProperties.s3MaxPartUploadSize());
         List<MultipartPresignedUrl> urls = IntStream.rangeClosed(1, totalParts)
                 .mapToObj(partNum -> presignUploadPart(key, multipartUploadResponse.uploadId(), partNum))
                 .toList();
 
-        Instant expiresAt = Instant.now().plusSeconds(s3Properties.presignedUrlLifetimeSec());
+        Instant expiresAt = Instant.now().plusSeconds(storageProperties.s3PresignedUrlLifetimeSec());
 
         return new MultipartUploadContext(
-                multipartUploadResponse.uploadId(), key, s3Properties.maxPartUploadSize(), urls, expiresAt
+                multipartUploadResponse.uploadId(), key, storageProperties.s3MaxPartUploadSize(), urls, expiresAt
         );
     }
 
     private MultipartPresignedUrl presignUploadPart(String key, String uploadId, int partNumber) {
         UploadPartPresignRequest presignRequest = UploadPartPresignRequest.builder()
-                .signatureDuration(Duration.ofSeconds(s3Properties.presignedUrlLifetimeSec()))
+                .signatureDuration(Duration.ofSeconds(storageProperties.s3PresignedUrlLifetimeSec()))
                 .uploadPartRequest(b -> b
-                        .bucket(s3Properties.bucketName())
+                        .bucket(storageProperties.s3BucketName())
                         .key(key)
                         .partNumber(partNumber)
                         .uploadId(uploadId))
