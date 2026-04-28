@@ -35,10 +35,16 @@ FROM eclipse-temurin:17-jdk-jammy AS videoapp-worker
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+    ffmpeg python3 python3-pip && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install --no-cache-dir --upgrade pip && \
+    python3 -m pip install --no-cache-dir --break-system-packages \
+    torch --index-url https://download.pytorch.org/whl/cpu && \
+    python3 -m pip install --no-cache-dir --break-system-packages \
+    faster-whisper
 
 COPY --from=builder /build/videoapp-worker/target/videoapp-worker.jar videoapp-worker.jar
+COPY videoapp-worker/transcribe.py .
 
 EXPOSE 5006
 

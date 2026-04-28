@@ -14,13 +14,27 @@ import static videoapp.common.Constants.*;
 public class FfmpegCommandBuilder {
 
     private String sourceUrl;
+    private double sourceFileStartTimeCodeSec = 0.0;
+    private double sourceFileDurationSec = 0.0;
     private String outputFilesDirectory;
     private String outputAudioFileName;
+    private String outputAudioProfile;
     private List<Resolution> profiles;
     private Mode mode = null;
+    private LogLevel logLevel = LogLevel.ERROR;
 
     public FfmpegCommandBuilder setSourceUrl(String sourceUrl) {
         this.sourceUrl = sourceUrl;
+        return this;
+    }
+
+    public FfmpegCommandBuilder setSourceFileDurationSec(double sourceFileDurationSec) {
+        this.sourceFileDurationSec = sourceFileDurationSec;
+        return this;
+    }
+
+    public FfmpegCommandBuilder setSourceFileStartTimeCodeSec(double sourceFileStartTimeCodeSec) {
+        this.sourceFileStartTimeCodeSec = sourceFileStartTimeCodeSec;
         return this;
     }
 
@@ -34,6 +48,11 @@ public class FfmpegCommandBuilder {
         return this;
     }
 
+    public FfmpegCommandBuilder setOutputAudioProfile(String outputAudioProfile) {
+        this.outputAudioProfile = outputAudioProfile;
+        return this;
+    }
+
     public FfmpegCommandBuilder setTargetQualityProfiles(List<Resolution> profiles) {
         this.profiles = profiles;
         return this;
@@ -41,6 +60,11 @@ public class FfmpegCommandBuilder {
 
     public FfmpegCommandBuilder setMode(Mode mode) {
         this.mode = mode;
+        return this;
+    }
+
+    public FfmpegCommandBuilder setLogLevel(LogLevel level) {
+        this.logLevel = level;
         return this;
     }
 
@@ -55,15 +79,31 @@ public class FfmpegCommandBuilder {
         List<String> commands = new ArrayList<>(List.of(
                 "ffmpeg",
                 "-hide_banner",
-                "-loglevel", "error",
-                "-threads", "0",
-                "-i", sourceUrl
+                "-loglevel", logLevel.level,
+                "-threads", "0"
         ));
+        if (sourceFileStartTimeCodeSec > 0) {
+            commands.addAll(List.of("-ss", String.valueOf(sourceFileStartTimeCodeSec)));
+        }
+        commands.addAll(List.of("-i", sourceUrl));
 
         mode.function.accept(this, commands);
         return commands;
     }
 
+    private void buildHlsAudioArguments(List<String> cmd) {
+        cmd.addAll(List.of(
+                "-vn",
+                "-c:a", "aac",
+                "-b:a", "128k",
+                "-f", "hls",
+                "-hls_time", "6",
+                "-hls_playlist_type", "vod",
+                "-hls_flags", "temp_file",
+                "-hls_segment_filename", outputFilesDirectory+ "/" + outputAudioProfile + "/segment_%05d.ts",
+                outputFilesDirectory + "/" + outputAudioProfile + "/" + PLAYLIST_FILENAME + M3U8_EXTENSION
+        ));
+    }
 
     private void buildHlsVideoArguments(List<String> commands) {
         for (int i = 0; i < profiles.size(); i++) {
@@ -101,14 +141,47 @@ public class FfmpegCommandBuilder {
         cmd.addAll(List.of("-vn", "-acodec", "aac", outputFilesDirectory + "/" + outputAudioFileName + M4A_EXTENSION));
     }
 
+    private void buildFindSilenceEndArgs(List<String> cmd) {
+        cmd.addAll(List.of("-af", "silencedetect=n=-30dB:d=0.5", "-f", "null", "-"));
+    }
+
+    private void extractAudioFragment(List<String> cmd) {
+        cmd.addAll(List.of("-vn", "-acodec", "pcm_s16le", "-ar", "16000", "-ac", "1"));
+        if (sourceFileDurationSec > 0) {
+            cmd.addAll(List.of("-t", String.valueOf(sourceFileDurationSec)));
+        }
+        cmd.addAll(List.of("-f", "wav", "pipe:1"));
+    }
+
     public enum Mode {
+        HLS_AUDIO(FfmpegCommandBuilder::buildHlsAudioArguments),
         HLS_VIDEO(FfmpegCommandBuilder::buildHlsVideoArguments),
-        EXTRACT_AUDIO(FfmpegCommandBuilder::buildExtractAudioArgs);
+        EXTRACT_AUDIO(FfmpegCommandBuilder::buildExtractAudioArgs),
+        FIND_SILENCE_END(FfmpegCommandBuilder::buildFindSilenceEndArgs),
+        EXTRACT_AUDIO_FRAGMENT(FfmpegCommandBuilder::extractAudioFragment);
 
         private final BiConsumer<FfmpegCommandBuilder, List<String>> function;
 
         Mode(BiConsumer<FfmpegCommandBuilder, List<String>> function) {
             this.function = function;
+        }
+    }
+
+    public enum LogLevel {
+        QUIET("quiet"),
+        PANIC("panic"),
+        FATAL("fatal"),
+        ERROR("error"),
+        WARNING("warning"),
+        INFO("info"),
+        VERBOSE("verbose"),
+        DEBUG("debug"),
+        TRACE("trace");
+
+        private final String level;
+
+        LogLevel(String level) {
+            this.level = level;
         }
     }
 }
