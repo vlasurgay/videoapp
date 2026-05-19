@@ -57,7 +57,7 @@ public class VideoService {
         videoRepository.updateSourceAudioKeyByPublicId(publicId, sourceAudioKey);
     }
 
-    public void updateMasterPlaylistKey(String publicId, String masterPlaylistKey) {
-        videoRepository.updateMasterPlaylistKeyByPublicId(publicId, masterPlaylistKey);
+    public void completeVideoProcessing(String publicId, String masterPlaylistKey) {
+        videoRepository.updateMasterPlaylistKeyAndStatusByPublicId(publicId, VideoStatus.COMPLETED, masterPlaylistKey);
     }
 }

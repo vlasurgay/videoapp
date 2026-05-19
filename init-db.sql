@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS media_tracks (
     video_id BIGINT NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
     type VARCHAR(50) NOT NULL,
     label VARCHAR(50) NOT NULL,
-    upload_key VARCHAR(500) NOT NULL,
+    playlist_key VARCHAR(500) NOT NULL,
     metadata JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );

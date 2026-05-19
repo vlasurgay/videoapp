@@ -30,8 +30,8 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
 
     @Modifying
     @Transactional
-    @Query("update Video v set v.masterPlaylistKey = :masterPlaylistKey where v.publicId = :publicId")
-    void updateMasterPlaylistKeyByPublicId(@Param("publicId") String publicId, @Param("masterPlaylistKey") String masterPlaylistKey);
+    @Query("update Video v set v.masterPlaylistKey = :masterPlaylistKey, status = :status where v.publicId = :publicId")
+    void updateMasterPlaylistKeyAndStatusByPublicId(@Param("publicId") String publicId, @Param("status") VideoStatus status, @Param("masterPlaylistKey") String masterPlaylistKey);
 
     Optional<Video> findByPublicId(String publicId);
 }

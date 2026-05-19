@@ -55,7 +55,7 @@ public class MasterPlaylistJobProcessor implements JobProcessor {
 
         storageProvider.putObject(uploadKey, masterPlaylistContent.getBytes(), APPLICATION_X_MPEGURL);
 
-        videoService.updateMasterPlaylistKey(publicId, uploadKey);
+        videoService.completeVideoProcessing(publicId, uploadKey);
 
         log.info("Video processing successfully completed. Master playlist has been created, publicId={}", publicId);
     }

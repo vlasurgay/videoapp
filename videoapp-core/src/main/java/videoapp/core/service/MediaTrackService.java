@@ -19,13 +19,13 @@ public class MediaTrackService {
         this.mediaTrackRepository = mediaTrackRepository;
     }
 
-    public MediaTrack initializeMediaTrack(Long videoId, TrackType type, String label, String s3Key, TrackMetadata metadata) {
+    public MediaTrack initializeMediaTrack(Long videoId, TrackType type, String label, String key, TrackMetadata metadata) {
         MediaTrack track = new MediaTrack();
 
         track.setVideoId(videoId);
         track.setType(type);
         track.setLabel(label);
-        track.setUploadKey(s3Key);
+        track.setPlaylistKey(key);
         track.setMetadata(metadata);
 
         return mediaTrackRepository.save(track);

@@ -28,8 +28,8 @@ public class MediaTrack {
     @Column(nullable = false, length = 50)
     private String label;
 
-    @Column(name = "upload_key", nullable = false, length = 500)
-    private String uploadKey;
+    @Column(name = "playlist_key", nullable = false, length = 500)
+    private String playlistKey;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
