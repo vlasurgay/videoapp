@@ -74,7 +74,7 @@ public class TranscodeJobDefinition implements JobDefinition {
                     array,
                     p.getLabel(),
                     p.getHeight(),
-                    p.getWidth(),
+                    defineWidth(p, metadata),
                     Math.multiplyExact(Long.parseLong(p.getBitrateKbps()), 1000L)
             );
         }
@@ -93,5 +93,16 @@ public class TranscodeJobDefinition implements JobDefinition {
                 .put(HEIGHT, height)
                 .put(WIDTH, width)
                 .put(BITRATE, bitrate);
+    }
+
+    private int defineWidth(VideoQualityProfile profile, VideoMetadata metadata) {
+        double aspectRatio = (double) metadata.getWidth() / metadata.getHeight();
+        int targetWidth = (int) Math.round(profile.getHeight() * aspectRatio);
+
+        if (targetWidth % 2 != 0) {
+            targetWidth++;
+        }
+
+        return targetWidth;
     }
 }

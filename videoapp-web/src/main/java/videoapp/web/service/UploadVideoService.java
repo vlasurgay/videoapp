@@ -59,7 +59,7 @@ public class UploadVideoService {
         Video video = videoService.initiateVideo(publicId, initUploadRequest, createdAt);
         uploadInfoService.initializeUploadInfo(video.getId(), uploadContext.uploadId(), key, uploadContext.expiresAt(), createdAt);
 
-        log.info("multipart upload created, uploadId={}", publicId);
+        log.info("multipart upload created, publicId={}", publicId);
         return uploadContext;
     }
 
