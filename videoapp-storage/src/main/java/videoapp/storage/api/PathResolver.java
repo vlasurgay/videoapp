@@ -10,4 +10,6 @@ public interface PathResolver {
 
     String buildBaseHlsDirKey(String publicId);
 
+    String buildClientsKey(String subKey);
+
 }
