@@ -32,6 +32,7 @@ How it Works (Pipeline):
 
 **Setting up**:
 1. Create an S3 instance at AWS. Define an SQS queue and set an event-notification to the S3 with type 'Multipart upload completed', destination type 'SQS queue' destination as your queue and filter 'temp/uploads/'.
+Create an aws cloufront distribution and make it a var named CDN_DOMAIN_NAME(https://domain.smth).
 
 Manage CORS rules in order to access your bucket. Initially your JSON can look like this:
 
@@ -64,8 +65,8 @@ Manage CORS rules in order to access your bucket. Initially your JSON can look l
     AWS_ACCESS_KEY_ID=
     AWS_SQS_QUEUE_NAME=
     AWS_SECRET_ACCESS_KEY=
-    AWS_REGION= 
-    IS_S3_MODE_ENABLED= 
+    AWS_REGION=
+    CDN_DOMAIN_NAME=
     DB_NAME= 
     DB_HOST=
     DB_PORT=
