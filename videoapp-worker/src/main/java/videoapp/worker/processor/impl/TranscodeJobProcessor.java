@@ -66,7 +66,7 @@ public class TranscodeJobProcessor implements JobProcessor {
         try (ProcessingWorkspace workspace = new ProcessingWorkspace(workerProperties.temporalOutputDirectory())) {
 
             Process process = runTranscode(presignedUrl, workspace, resolutions);
-            Map<String, UploadStats> uploadStats = uploadSegmentService.uploadFiles(workspace.getPath(), baseUploadKey, process::isAlive);
+            Map<String, UploadStats> uploadStats = uploadSegmentService.uploadFiles(workspace.getOutputDir(), baseUploadKey, process::isAlive);
 
             if (process.waitFor() != 0) {
                 throw new RuntimeException("FFmpeg failed with exit code " + process.exitValue());
@@ -85,7 +85,7 @@ public class TranscodeJobProcessor implements JobProcessor {
         List<String> command = new FfmpegCommandBuilder()
                 .setMode(HLS_VIDEO)
                 .setSourceUrl(sourceUrl)
-                .setOutputFilesDirectory(workspace.getAbsolutePath())
+                .setOutputFilesDirectory(workspace.getOutputAbsolutePath())
                 .setTargetQualityProfiles(resolutions)
                 .build();
 

@@ -18,7 +18,6 @@ public class FfmpegCommandBuilder {
     private double sourceFileDurationSec = 0.0;
     private String outputFilesDirectory;
     private String outputAudioFileName;
-    private String outputAudioProfile;
     private List<Resolution> profiles;
     private Mode mode = null;
     private LogLevel logLevel = LogLevel.ERROR;
@@ -45,11 +44,6 @@ public class FfmpegCommandBuilder {
 
     public FfmpegCommandBuilder setOutputAudioFileName(String outputAudioFileName) {
         this.outputAudioFileName = outputAudioFileName;
-        return this;
-    }
-
-    public FfmpegCommandBuilder setOutputAudioProfile(String outputAudioProfile) {
-        this.outputAudioProfile = outputAudioProfile;
         return this;
     }
 
@@ -100,8 +94,8 @@ public class FfmpegCommandBuilder {
                 "-hls_time", "6",
                 "-hls_playlist_type", "vod",
                 "-hls_flags", "temp_file",
-                "-hls_segment_filename", outputFilesDirectory+ "/" + outputAudioProfile + "/segment_%05d.ts",
-                outputFilesDirectory + "/" + outputAudioProfile + "/" + PLAYLIST_FILENAME + M3U8_EXTENSION
+                "-hls_segment_filename", outputFilesDirectory + "/segment_%05d.ts",
+                outputFilesDirectory + "/" +  PLAYLIST_FILENAME + M3U8_EXTENSION
         ));
     }
 
@@ -124,7 +118,6 @@ public class FfmpegCommandBuilder {
                 "-hls_time", "6",
                 "-hls_playlist_type", "vod",
                 "-hls_flags", "temp_file",
-//                "-master_pl_name", "master.m3u8",
                 "-hls_segment_filename", outputFilesDirectory + "/%v/segment_%05d.ts",
                 "-var_stream_map", buildStreamMap(),
                 outputFilesDirectory + "/%v/" + PLAYLIST_FILENAME + M3U8_EXTENSION

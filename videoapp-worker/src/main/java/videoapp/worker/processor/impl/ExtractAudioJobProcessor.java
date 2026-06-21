@@ -59,7 +59,6 @@ public class ExtractAudioJobProcessor implements JobProcessor {
         String presignedUrl = storageProvider.getObjectPresignedUrl(sourceUrl);
 
         try (ProcessingWorkspace workspace = new ProcessingWorkspace(workerProperties.temporalOutputDirectory())) {
-
             Process process = runExtractAudio(presignedUrl, workspace, fileName);
 
             int exitCode = process.waitFor();
@@ -67,7 +66,7 @@ public class ExtractAudioJobProcessor implements JobProcessor {
                 throw new RuntimeException("FFmpeg extract audio failed with exit code " + exitCode);
             }
 
-            Map<String, UploadStats> uploadStats = uploadSegmentService.uploadFiles(workspace.getPath(), uploadDir, process::isAlive);
+            Map<String, UploadStats> uploadStats = uploadSegmentService.uploadFiles(workspace.getOutputDir(), uploadDir, process::isAlive);
 
             UploadStats uploadedFileStat = retrieveSourceAudioKey(uploadStats);
             videoService.updateAudioSourceKey(video.getPublicId(), uploadedFileStat.getFileUploadKey());
@@ -84,7 +83,7 @@ public class ExtractAudioJobProcessor implements JobProcessor {
     private Process runExtractAudio(String sourceUrl, ProcessingWorkspace workspace, String fileName) throws Exception {
         List<String> command = new FfmpegCommandBuilder()
                 .setSourceUrl(sourceUrl)
-                .setOutputFilesDirectory(workspace.getAbsolutePath())
+                .setOutputFilesDirectory(workspace.getOutputAbsolutePath())
                 .setOutputAudioFileName(fileName)
                 .setMode(FfmpegCommandBuilder.Mode.EXTRACT_AUDIO)
                 .build();

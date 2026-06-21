@@ -1,0 +1,12 @@
+**/target
+**/.idea
+**/.vscode
+**/.git
+**/.DS_Store
+**/__pycache__
+**/*.pyc
+**/*.log
+**/*.tmp
+**/*.swp
+node_modules
+.gitignore

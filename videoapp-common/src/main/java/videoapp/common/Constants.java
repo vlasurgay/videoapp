@@ -2,6 +2,9 @@ package videoapp.common;
 
 public class Constants {
 
+    // dir names
+    public static final String OUTPUT_DIR_NAME = "output";
+
     // http parameters
     public static final String APPLICATION_X_MPEGURL = "application/x-mpegURL";
 

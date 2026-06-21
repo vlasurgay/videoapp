@@ -72,11 +72,8 @@ public class AudioTranscriptionJobProcessor implements JobProcessor {
             String language = resolveLanguage(presignedUrl, silenceEndTime);
             String baseUploadKey = pathResolver.buildBaseHlsDirKey(video.getPublicId());
 
-            Path audioHlsDir = workspace.getPath().resolve(language);
-            Files.createDirectories(audioHlsDir);
-
             Process process = runAudioHls(presignedUrl, language, workspace);
-            Map<String, UploadStats> uploadStats = uploadSegmentService.uploadFiles(workspace.getPath(), baseUploadKey, process::isAlive);
+            Map<String, UploadStats> uploadStats = uploadSegmentService.uploadFiles(workspace.getOutputDir(), baseUploadKey, process::isAlive);
 
             if (process.waitFor() != 0) {
                 throw new RuntimeException("FFmpeg failed with exit code " + process.exitValue());
@@ -124,11 +121,13 @@ public class AudioTranscriptionJobProcessor implements JobProcessor {
     }
 
     private Process runAudioHls(String sourceKey, String language, ProcessingWorkspace workspace) throws IOException {
+        Path languageOutputDir = workspace.getOutputDir().resolve(language);
+        Files.createDirectories(languageOutputDir);
+
         List<String> commands = new FfmpegCommandBuilder()
                 .setMode(FfmpegCommandBuilder.Mode.HLS_AUDIO)
                 .setSourceUrl(sourceKey)
-                .setOutputAudioProfile(language)
-                .setOutputFilesDirectory(workspace.getAbsolutePath())
+                .setOutputFilesDirectory(languageOutputDir.toAbsolutePath().toString())
                 .build();
 
         return new ProcessBuilder(commands)
