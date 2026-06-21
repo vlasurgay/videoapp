@@ -51,5 +51,8 @@ services:
         condition: service_healthy
     deploy:
       replicas: 1
+    volumes:
+      - ./docker_cache/huggingface:/root/.cache/huggingface
+      - ./docker_cache/tts:/root/.local/share/tts
 volumes:
   pgdata:

@@ -17,13 +17,16 @@ public class Constants {
     // main file names
     public static final String PLAYLIST_FILENAME = "playlist";
     public static final String MASTER_FILENAME = "master";
+    public static final String ORIGINAL_AUDIO_FOR_DUB = "original_audio_for_dub.m4a";
 
 
     // metadata parameters
     public static final String PUBLIC_ID = "publicId";
     public static final String FILE_NAME = "fileName";
     public static final String ORIGIN_VIDEO_KEY = "originVideoKey";
+    public static final String TARGET_LANGUAGES = "targetLanguages";
     public static final String TARGET_RESOLUTIONS = "targetResolutions";
+    public static final String TARGET_LANGUAGE = "targetLanguage";
     public static final String MUTED = "muted";
     public static final String AI_SUBS = "aiSubs";
     public static final String LABEL = "label";

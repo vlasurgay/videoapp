@@ -18,6 +18,9 @@ public class TargetSettings implements Serializable {
     @JsonProperty(TARGET_RESOLUTIONS)
     private List<String> targetResolutions;
 
+    @JsonProperty(TARGET_LANGUAGES)
+    private List<String> targetLanguages;
+
     @JsonProperty(MUTED)
     private Boolean muted;
 

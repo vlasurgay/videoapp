@@ -11,8 +11,7 @@ import videoapp.worker.preparation.definition.JobDefinition;
 import java.util.List;
 
 import static videoapp.common.Constants.PUBLIC_ID;
-import static videoapp.common.model.enums.JobType.GENERATE_MASTER_PLAYLIST;
-import static videoapp.common.model.enums.JobType.TRANSCODE;
+import static videoapp.common.model.enums.JobType.*;
 
 @Component
 public class MasterPlaylistJobDefinition implements JobDefinition {
@@ -23,7 +22,7 @@ public class MasterPlaylistJobDefinition implements JobDefinition {
 
     @Override
     public List<JobType> dependsOn() {
-        return List.of(TRANSCODE);
+        return List.of(TRANSCODE, EXTRACT_AUDIO, AI_DUBBING);
     }
 
     @Override

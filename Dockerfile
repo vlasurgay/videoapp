@@ -20,8 +20,7 @@ COPY videoapp-core videoapp-core
 RUN mvn clean package -X
 
 
-
-FROM eclipse-temurin:17-jdk-jammy AS videoapp-web
+FROM eclipse-temurin:17-jre-jammy AS videoapp-web
 WORKDIR /app
 
 COPY --from=builder /build/videoapp-web/target/videoapp-web.jar videoapp-web.jar
@@ -29,23 +28,32 @@ EXPOSE 8080 5005
 
 ENTRYPOINT ["sh", "-c", "java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -jar videoapp-web.jar"]
 
-
-
-FROM eclipse-temurin:17-jdk-jammy AS videoapp-worker
-WORKDIR /app
+FROM python:3.10-slim-bookworm AS worker-base
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg python3 python3-pip && rm -rf /var/lib/apt/lists/*
+    openjdk-17-jre-headless \
+    ffmpeg \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install --no-cache-dir --upgrade pip && \
-    python3 -m pip install --no-cache-dir --break-system-packages \
-    torch --index-url https://download.pytorch.org/whl/cpu && \
-    python3 -m pip install --no-cache-dir --break-system-packages \
-    faster-whisper
+WORKDIR /app
+
+RUN pip install --no-cache-dir uv
+
+COPY videoapp-worker/requirements.txt ./
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system -r requirements.txt
+
+FROM worker-base AS videoapp-worker
+
+ENV PYTHONUNBUFFERED=1 \
+    TORCH_HOME=/opt/torch-cache \
+    HF_HOME=/opt/huggingface-cache
 
 COPY --from=builder /build/videoapp-worker/target/videoapp-worker.jar videoapp-worker.jar
 COPY videoapp-worker/transcribe.py .
+COPY videoapp-worker/dubbing_tool.py .
 
 EXPOSE 5006
-
 ENTRYPOINT ["sh", "-c", "java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006 -jar videoapp-worker.jar"]

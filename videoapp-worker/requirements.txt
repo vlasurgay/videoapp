@@ -1,0 +1,16 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+setuptools>=65.0.0
+torch
+torchaudio
+torchcodec
+
+transformers==4.48.3
+TTS==0.22.0
+faster-whisper>=1.1.1
+deep-translator==1.11.4
+silero-vad
+soundfile
+numpy
+scipy
+demucs==4.0.1

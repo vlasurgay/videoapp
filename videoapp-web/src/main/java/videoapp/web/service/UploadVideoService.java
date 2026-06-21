@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import videoapp.common.model.dto.InitUploadRequest;
 import videoapp.common.model.dto.VideoConfigDto;
 import videoapp.common.model.entity.Video;
+import videoapp.common.model.enums.DubbingLanguage;
 import videoapp.common.model.enums.VideoQualityProfile;
 import videoapp.common.model.enums.VideoStatus;
 import videoapp.common.model.upload.MultipartUploadContext;
@@ -41,7 +42,7 @@ public class UploadVideoService {
         List<String> availableQualityProfiles = Arrays.stream(VideoQualityProfile.values())
                 .map(profile -> Integer.toString(profile.getHeight()))
                 .toList();
-        return new VideoConfigDto(availableQualityProfiles);
+        return new VideoConfigDto(availableQualityProfiles, DubbingLanguage.availableCodes());
     }
 
 
