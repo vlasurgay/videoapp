@@ -10,7 +10,9 @@ import java.util.List;
 public interface JobDefinition {
 
     JobType getType();
-    JsonNode buildPayload(JobPlanningContext context);
+    default List<JsonNode> buildPayloads(JobPlanningContext context) {
+        return Collections.singletonList(null);
+    }
 
     default boolean isRequired(JobPlanningContext context) {
         return true;

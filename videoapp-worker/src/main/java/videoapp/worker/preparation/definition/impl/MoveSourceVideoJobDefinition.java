@@ -8,6 +8,8 @@ import videoapp.common.model.enums.JobType;
 import videoapp.common.model.processing.JobPlanningContext;
 import videoapp.worker.preparation.definition.JobDefinition;
 
+import java.util.List;
+
 import static videoapp.common.Constants.*;
 import static videoapp.common.model.enums.JobType.MOVE_SOURCE_VIDEO;
 
@@ -20,13 +22,13 @@ public class MoveSourceVideoJobDefinition implements JobDefinition {
     }
 
     @Override
-    public JsonNode buildPayload(JobPlanningContext context) {
+    public List<JsonNode> buildPayloads(JobPlanningContext context) {
         ObjectNode payload = JsonNodeFactory.instance.objectNode();
 
         payload.put(ORIGIN_VIDEO_KEY, context.originKey());
         payload.put(PUBLIC_ID, context.publicId());
 
-        return payload;
+        return List.of(payload);
 
     }
 }

@@ -10,6 +10,7 @@ import videoapp.worker.preparation.definition.JobDefinition;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class JobPlannerService {
@@ -23,29 +24,46 @@ public class JobPlannerService {
     }
 
     public void planJobs(JobPlanningContext context) {
-        Map<JobType, ProcessingJob> createdJobs = new HashMap<>();
+        Map<JobType, List<ProcessingJob>> createdJobs = new HashMap<>();
 
-        for (JobDefinition jobDefinition : jobDefinitions) {
-            if (jobDefinition.isRequired(context)) {
-                ProcessingJob processingJob = new ProcessingJob();
+        for (JobDefinition definition : jobDefinitions) {
+            if (definition.isRequired(context)) {
+                List<ProcessingJob> jobs = definition.buildPayloads(context).stream()
+                        .map(payload -> createJob(context, definition.getType(), payload))
+                        .toList();
 
-                processingJob.setVideoId(context.videoId());
-                processingJob.setType(jobDefinition.getType());
-                processingJob.setPayload(jobDefinition.buildPayload(context));
-
-                createdJobs.put(jobDefinition.getType(), processingJob);
+                createdJobs.put(definition.getType(), jobs);
             }
         }
 
         for (JobDefinition definition : jobDefinitions) {
-            ProcessingJob currentJob = createdJobs.get(definition.getType());
-
-            if (currentJob != null && definition.dependsOn() != null) {
-                definition.dependsOn().stream()
-                        .map(createdJobs::get)
-                        .forEach(currentJob.getDependencies()::add);
+            List<ProcessingJob> currentJobs = createdJobs.get(definition.getType());
+            if (currentJobs == null || currentJobs.isEmpty()) {
+                continue;
             }
+
+            List<ProcessingJob> listedJobs = definition.dependsOn().stream()
+                    .map(createdJobs::get)
+                    .filter(Objects::nonNull)
+                    .flatMap(List::stream)
+                    .toList();
+
+            currentJobs.forEach(job -> job.getDependencies().addAll(listedJobs));
         }
-        processingJobService.saveAll(createdJobs.values());
+        processingJobService.saveAll(
+                createdJobs.values().stream()
+                        .flatMap(List::stream)
+                        .toList()
+        );
+    }
+
+    private ProcessingJob createJob(JobPlanningContext context, JobType type, com.fasterxml.jackson.databind.JsonNode payload) {
+        ProcessingJob processingJob = new ProcessingJob();
+
+        processingJob.setVideoId(context.videoId());
+        processingJob.setType(type);
+        processingJob.setPayload(payload);
+
+        return processingJob;
     }
 }

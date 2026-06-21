@@ -27,11 +27,11 @@ public class MasterPlaylistJobDefinition implements JobDefinition {
     }
 
     @Override
-    public JsonNode buildPayload(JobPlanningContext context) {
+    public List<JsonNode> buildPayloads(JobPlanningContext context) {
         ObjectNode payload = JsonNodeFactory.instance.objectNode();
 
         payload.put(PUBLIC_ID, context.publicId());
 
-        return payload;
+        return List.of(payload);
     }
 }

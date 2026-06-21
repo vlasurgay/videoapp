@@ -38,7 +38,7 @@ public class TranscodeJobDefinition implements JobDefinition {
     }
 
     @Override
-    public JsonNode buildPayload(JobPlanningContext context) {
+    public List<JsonNode> buildPayloads(JobPlanningContext context) {
         List<VideoQualityProfile> profiles = resolveProfiles(context.targetSettings(), context.videoMetadata());
 
         ObjectNode payload = objectMapper.createObjectNode();
@@ -46,7 +46,7 @@ public class TranscodeJobDefinition implements JobDefinition {
         ArrayNode resolutions = payload.putArray(TARGET_RESOLUTIONS);
         addResolutions(resolutions, profiles, context.videoMetadata());
 
-        return payload;
+        return List.of(payload);
     }
 
     private List<VideoQualityProfile> resolveProfiles(TargetSettings targetSettings, VideoMetadata metadata) {
