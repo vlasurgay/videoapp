@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - master
+      - cicd-terraform-aws-prep
   pull_request:
     branches:
       - master
+      - cicd-terraform-aws-prep
   workflow_dispatch:
 
 permissions:
