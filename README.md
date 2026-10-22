@@ -63,9 +63,7 @@ Manage CORS rules in order to access your bucket. Initially your JSON can look l
     WEB_SERVER_PORT=
     AWS_S3_UPLOADS_BUCKET=
     WS_S3_PROCESSED_BUCKET=
-    AWS_ACCESS_KEY_ID=
     AWS_SQS_QUEUE_NAME=
-    AWS_SECRET_ACCESS_KEY=
     AWS_REGION=
     CDN_DOMAIN_NAME=
     DB_NAME= 

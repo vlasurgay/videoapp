@@ -23,6 +23,7 @@
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
     </dependency>
+
     <dependency>
       <groupId>vlsurhai.portfolio</groupId>
       <artifactId>videoapp-common</artifactId>
@@ -34,6 +35,15 @@
     <dependency>
       <groupId>vlsurhai.portfolio</groupId>
       <artifactId>videoapp-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>sso</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>ssooidc</artifactId>
     </dependency>
   </dependencies>
 
