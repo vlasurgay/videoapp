@@ -14,8 +14,8 @@ public class S3StorageProvider implements StorageProvider {
     private final ObjectStorage processed;
 
     public S3StorageProvider(S3Client s3Client, StorageProperties properties, S3Presigner s3Presigner) {
-        this.uploads = new S3BucketStorage(properties.s3UploadsBucket(), s3Client, properties, s3Presigner);
-        this.processed = new S3BucketStorage(properties.s3ProcessedBucket(), s3Client, properties, s3Presigner);
+        this.uploads = new S3BucketStorage(properties.s3UploadsBucketName(), s3Client, properties, s3Presigner);
+        this.processed = new S3BucketStorage(properties.s3ProcessedBucketName(), s3Client, properties, s3Presigner);
     }
 
     @Override

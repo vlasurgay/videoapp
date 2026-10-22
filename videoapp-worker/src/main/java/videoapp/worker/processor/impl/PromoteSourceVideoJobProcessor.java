@@ -47,7 +47,7 @@ public class PromoteSourceVideoJobProcessor implements JobProcessor {
         String fileName = extractFileNameFromUploadKey(originKey);
         String sourceFileKey = pathResolver.buildSourceFileKey(publicId, fileName);
 
-        storageProvider.uploads().moveObject(originKey, storageProperties.s3ProcessedBucket(), sourceFileKey);
+        storageProvider.uploads().moveObject(originKey, storageProperties.s3ProcessedBucketName(), sourceFileKey);
 
         videoService.updateVideoSourceKey(publicId, sourceFileKey);
 
