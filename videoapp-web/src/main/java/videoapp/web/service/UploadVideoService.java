@@ -55,7 +55,7 @@ public class UploadVideoService {
         String key = pathResolver.buildTempFileKey(publicId, initUploadRequest.fileName());
         Instant createdAt = Instant.now();
 
-        MultipartUploadContext uploadContext = storageProvider.createMultipartUpload(key, initUploadRequest.fileSizeBytes());
+        MultipartUploadContext uploadContext = storageProvider.uploads().createMultipartUpload(key, initUploadRequest.fileSizeBytes());
 
         Video video = videoService.initiateVideo(publicId, initUploadRequest, createdAt);
         uploadInfoService.initializeUploadInfo(video.getId(), uploadContext.uploadId(), key, uploadContext.expiresAt(), createdAt);
@@ -67,7 +67,7 @@ public class UploadVideoService {
 
     @Transactional
     public void completeMultipartUpload(CompletedMultipartContext completedMultipartContext) {
-        storageProvider.completeMultipartUpload(
+        storageProvider.uploads().completeMultipartUpload(
                 completedMultipartContext.key(), completedMultipartContext.uploadId(), completedMultipartContext.uploadedParts()
         );
         videoService.updateVideoStatus(completedMultipartContext.uploadId(), VideoStatus.PROCESSING);
@@ -80,7 +80,7 @@ public class UploadVideoService {
     public void abortMultipartUpload(String key, String uploadId, String status) {
 
         if (VideoStatus.ABORTED.equals(VideoStatus.valueOf(status)) || VideoStatus.FAILED.equals(VideoStatus.valueOf(status))) {
-            storageProvider.abortMultipartUpload(key, uploadId);
+            storageProvider.uploads().abortMultipartUpload(key, uploadId);
             videoService.updateVideoStatus(uploadId, VideoStatus.valueOf(status));
             log.debug("multipart upload aborted with status={}, uploadId={}", status, uploadId);
         } else {

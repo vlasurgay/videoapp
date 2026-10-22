@@ -90,7 +90,7 @@ public class AudioDubbingJobProcessor implements JobProcessor {
 
     private Path downloadOriginalAudio(Video video, ProcessingWorkspace workspace) throws IOException {
         Path originalAudioPath = workspace.getPath().resolve(ORIGINAL_AUDIO_FOR_DUB);
-        String presignedUrl = storageProvider.getObjectPresignedUrl(video.getSourceAudioKey());
+        String presignedUrl = storageProvider.processed().getObjectPresignedUrl(video.getSourceAudioKey());
 
         try (InputStream in = new URL(presignedUrl).openStream()) {
             Files.copy(in, originalAudioPath, StandardCopyOption.REPLACE_EXISTING);

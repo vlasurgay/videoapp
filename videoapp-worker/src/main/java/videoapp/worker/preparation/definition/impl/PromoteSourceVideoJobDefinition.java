@@ -11,14 +11,14 @@ import videoapp.worker.preparation.definition.JobDefinition;
 import java.util.List;
 
 import static videoapp.common.Constants.*;
-import static videoapp.common.model.enums.JobType.MOVE_SOURCE_VIDEO;
+import static videoapp.common.model.enums.JobType.PROMOTE_SOURCE_VIDEO;
 
 @Component
-public class MoveSourceVideoJobDefinition implements JobDefinition {
+public class PromoteSourceVideoJobDefinition implements JobDefinition {
 
     @Override
     public JobType getType() {
-        return MOVE_SOURCE_VIDEO;
+        return PROMOTE_SOURCE_VIDEO;
     }
 
     @Override

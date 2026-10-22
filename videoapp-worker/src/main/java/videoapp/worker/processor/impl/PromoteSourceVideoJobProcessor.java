@@ -7,32 +7,36 @@ import videoapp.common.model.enums.JobType;
 import videoapp.core.service.VideoService;
 import videoapp.storage.api.PathResolver;
 import videoapp.storage.api.StorageProvider;
+import videoapp.storage.config.StorageProperties;
 import videoapp.worker.processor.JobProcessor;
 
 import static videoapp.common.Constants.ORIGIN_VIDEO_KEY;
 import static videoapp.common.Constants.PUBLIC_ID;
-import static videoapp.common.model.enums.JobType.MOVE_SOURCE_VIDEO;
+import static videoapp.common.model.enums.JobType.PROMOTE_SOURCE_VIDEO;
 import static videoapp.common.utils.JsonNodeExtractor.extractString;
 import static videoapp.common.utils.UploadKeyUtils.extractFileNameFromUploadKey;
 
 @Slf4j
 @Component
-public class MoveSourceVideoJobProcessor implements JobProcessor {
+public class PromoteSourceVideoJobProcessor implements JobProcessor {
 
     private final VideoService videoService;
     private final StorageProvider storageProvider;
     private final PathResolver pathResolver;
+    private final StorageProperties storageProperties;
 
 
-    public MoveSourceVideoJobProcessor(VideoService videoService, StorageProvider storageProvider, PathResolver pathResolver) {
+    public PromoteSourceVideoJobProcessor(VideoService videoService, StorageProvider storageProvider,
+                                          PathResolver pathResolver, StorageProperties storageProperties) {
         this.videoService = videoService;
         this.storageProvider = storageProvider;
         this.pathResolver = pathResolver;
+        this.storageProperties = storageProperties;
     }
 
     @Override
     public JobType getType() {
-        return MOVE_SOURCE_VIDEO;
+        return PROMOTE_SOURCE_VIDEO;
     }
 
     @Override
@@ -43,10 +47,10 @@ public class MoveSourceVideoJobProcessor implements JobProcessor {
         String fileName = extractFileNameFromUploadKey(originKey);
         String sourceFileKey = pathResolver.buildSourceFileKey(publicId, fileName);
 
-        storageProvider.copyObject(originKey, sourceFileKey);
+        storageProvider.uploads().moveObject(originKey, storageProperties.s3ProcessedBucket(), sourceFileKey);
 
         videoService.updateVideoSourceKey(publicId, sourceFileKey);
 
-        log.debug("MoveSourceVideoJobProcessor succeed, publicId={}", publicId);
+        log.debug("PromoteSourceVideoJobProcessor succeed, publicId={}", publicId);
     }
 }

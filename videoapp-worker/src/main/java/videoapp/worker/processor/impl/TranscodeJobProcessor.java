@@ -61,7 +61,7 @@ public class TranscodeJobProcessor implements JobProcessor {
         List<Resolution> resolutions = parseResolution(job.getPayload());
 
         String baseUploadKey = pathResolver.buildBaseHlsDirKey(video.getPublicId());
-        String presignedUrl = storageProvider.getObjectPresignedUrl(video.getSourceVideoKey());
+        String presignedUrl = storageProvider.processed().getObjectPresignedUrl(video.getSourceVideoKey());
 
         try (ProcessingWorkspace workspace = new ProcessingWorkspace(workerProperties.temporalOutputDirectory())) {
 

@@ -65,7 +65,7 @@ public class AudioTranscriptionJobProcessor implements JobProcessor {
     @Override
     public void process(ProcessingJob job) {
         Video video = videoService.getById(job.getVideoId());
-        String presignedUrl = storageProvider.getObjectPresignedUrl(video.getSourceAudioKey());
+        String presignedUrl = storageProvider.processed().getObjectPresignedUrl(video.getSourceAudioKey());
 
         try (ProcessingWorkspace workspace = new ProcessingWorkspace(workerProperties.temporalOutputDirectory())) {
             double silenceEndTime = findSilenceEndTime(presignedUrl);

@@ -56,7 +56,7 @@ public class ExtractAudioJobProcessor implements JobProcessor {
         String fileName = extractString(job.getPayload(), FILE_NAME);
 
         String uploadDir = pathResolver.buildSourceDirKey(video.getPublicId());
-        String presignedUrl = storageProvider.getObjectPresignedUrl(sourceUrl);
+        String presignedUrl = storageProvider.processed().getObjectPresignedUrl(sourceUrl);
 
         try (ProcessingWorkspace workspace = new ProcessingWorkspace(workerProperties.temporalOutputDirectory())) {
             Process process = runExtractAudio(presignedUrl, workspace, fileName);

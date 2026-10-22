@@ -53,7 +53,7 @@ public class MasterPlaylistJobProcessor implements JobProcessor {
         List<MediaTrack> tracks = trackService.findAllByVideoId(job.getVideoId());
         String masterPlaylistContent = buildMasterM3U8(tracks);
 
-        storageProvider.putObject(uploadKey, masterPlaylistContent.getBytes(), APPLICATION_X_MPEGURL);
+        storageProvider.processed().putObject(uploadKey, masterPlaylistContent.getBytes(), APPLICATION_X_MPEGURL);
 
         videoService.completeVideoProcessing(publicId, uploadKey);
 
