@@ -106,7 +106,7 @@ public class S3BucketStorage implements ObjectStorage {
     }
 
     @Override
-    public void moveObject(String sourceKey, String destinationKey, String destinationBucket) {
+    public void moveObject(String sourceKey, String destinationBucket, String destinationKey) {
         s3Client.copyObject(b -> b
                 .sourceBucket(bucketName)
                 .sourceKey(sourceKey)

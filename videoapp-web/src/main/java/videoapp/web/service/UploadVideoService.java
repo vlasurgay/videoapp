@@ -3,14 +3,15 @@ package videoapp.web.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import videoapp.common.config.CommonProperties;
 import videoapp.common.model.dto.InitUploadRequest;
 import videoapp.common.model.dto.VideoConfigDto;
 import videoapp.common.model.entity.Video;
 import videoapp.common.model.enums.DubbingLanguage;
 import videoapp.common.model.enums.VideoQualityProfile;
 import videoapp.common.model.enums.VideoStatus;
-import videoapp.common.model.upload.MultipartUploadContext;
 import videoapp.common.model.upload.CompletedMultipartContext;
+import videoapp.common.model.upload.MultipartUploadContext;
 import videoapp.common.utils.Utils;
 import videoapp.core.service.UploadInfoService;
 import videoapp.core.service.VideoService;
@@ -30,19 +31,24 @@ public class UploadVideoService {
     private final UploadInfoService uploadInfoService;
     private final StorageProvider storageProvider;
     private final PathResolver pathResolver;
+    private final CommonProperties commonProperties;
 
-    public UploadVideoService(VideoService videoService, UploadInfoService uploadInfoService, StorageProvider storageProvider, PathResolver pathResolver) {
+    public UploadVideoService(VideoService videoService, UploadInfoService uploadInfoService, StorageProvider storageProvider,
+                              PathResolver pathResolver, CommonProperties commonProperties) {
         this.videoService = videoService;
         this.uploadInfoService = uploadInfoService;
         this.storageProvider = storageProvider;
         this.pathResolver = pathResolver;
+        this.commonProperties = commonProperties;
     }
 
     public VideoConfigDto getAvailableVideoConfig() {
         List<String> availableQualityProfiles = Arrays.stream(VideoQualityProfile.values())
                 .map(profile -> Integer.toString(profile.getHeight()))
                 .toList();
-        return new VideoConfigDto(availableQualityProfiles, DubbingLanguage.availableCodes());
+        List<String> availableLangCodes = commonProperties.aiModeEnabled() ? DubbingLanguage.availableCodes() : List.of();
+
+        return new VideoConfigDto(availableQualityProfiles, availableLangCodes);
     }
 
 

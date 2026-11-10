@@ -17,18 +17,18 @@ COPY videoapp-storage videoapp-storage
 COPY videoapp-worker videoapp-worker
 COPY videoapp-core videoapp-core
 
-RUN mvn clean package -X
+RUN mvn --batch-mode --no-transfer-progress clean package
 
 
 FROM eclipse-temurin:17-jre-jammy AS videoapp-web
 WORKDIR /app
 
 COPY --from=builder /build/videoapp-web/target/videoapp-web.jar videoapp-web.jar
-EXPOSE 8080 5005
+EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -jar videoapp-web.jar"]
+ENTRYPOINT ["sh", "-c", "java -jar videoapp-web.jar"]
 
-FROM python:3.10-slim-bookworm AS worker-base
+FROM python:3.10-slim-bookworm AS worker-ai-base
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     openjdk-17-jre-headless \
@@ -38,22 +38,33 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir uv
-
-COPY videoapp-worker/requirements.txt ./
-
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system -r requirements.txt
-
-FROM worker-base AS videoapp-worker
-
 ENV PYTHONUNBUFFERED=1 \
     TORCH_HOME=/opt/torch-cache \
     HF_HOME=/opt/huggingface-cache
+
+RUN pip install --no-cache-dir uv
+
+COPY videoapp-worker/requirements-ai.txt ./
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system -r requirements-ai.txt
+
+FROM worker-ai-base AS videoapp-worker-ai
 
 COPY --from=builder /build/videoapp-worker/target/videoapp-worker.jar videoapp-worker.jar
 COPY videoapp-worker/transcribe.py .
 COPY videoapp-worker/dubbing_tool.py .
 
-EXPOSE 5006
-ENTRYPOINT ["sh", "-c", "java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006 -jar videoapp-worker.jar"]
+ENTRYPOINT ["sh", "-c", "java -jar videoapp-worker.jar"]
+
+FROM eclipse-temurin:17-jre-jammy AS videoapp-worker
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY --from=builder /build/videoapp-worker/target/videoapp-worker.jar videoapp-worker.jar
+ENTRYPOINT ["sh", "-c", "java -jar videoapp-worker.jar"]

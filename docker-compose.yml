@@ -1,4 +1,5 @@
 services:
+
   videoapp-db:
     image: postgres:16
     restart: always
@@ -16,6 +17,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
   adminer:
     image: adminer
     restart: always
@@ -23,27 +25,41 @@ services:
       - "5433:8080"
     depends_on:
       - videoapp-db
+
   videoapp-web:
     build:
       context: .
       target: videoapp-web
     env_file:
       - .env
+    environment:
+      AI_MODE_ENABLED: ${AI_MODE_ENABLED:-}
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     image: videoapp-web:latest
     ports:
       - "8080:8080"
       - "5005:5005"
+    volumes:
+      - type: bind
+        source: "${USERPROFILE}/.aws/config"
+        target: /root/.aws/config
+        read_only: true
+      - type: bind
+        source: "${USERPROFILE}/.aws/sso/cache"
+        target: /root/.aws/sso/cache
     depends_on:
       videoapp-db:
         condition: service_healthy
+
   videoapp-worker:
     build:
       context: .
-      target: videoapp-worker
+      target: ${WORKER_BUILD_TARGET:-videoapp-worker}
     env_file:
       - .env
-    ports:
-      - "5006:5006"
+    environment:
+      AI_MODE_ENABLED: ${AI_MODE_ENABLED:-}
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006"
     image: videoapp-worker:latest
     depends_on:
       videoapp-db:
@@ -51,7 +67,18 @@ services:
     deploy:
       replicas: 1
     volumes:
-      - ./docker_cache/huggingface:/root/.cache/huggingface
+      - type: bind
+        source: "${USERPROFILE}/.aws/config"
+        target: /root/.aws/config
+        read_only: true
+      - type: bind
+        source: "${USERPROFILE}/.aws/sso/cache"
+        target: /root/.aws/sso/cache
+      - ./docker_cache/huggingface:/opt/huggingface-cache
+      - ./docker_cache/torch:/opt/torch-cache
       - ./docker_cache/tts:/root/.local/share/tts
+    ports:
+      - "5006:5006"
+
 volumes:
   pgdata:

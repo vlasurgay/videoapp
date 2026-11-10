@@ -94,7 +94,7 @@ public class MasterPlaylistJobProcessor implements JobProcessor {
             sb.append(String.format(
                     "#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"audio\",NAME=\"%s\",LANGUAGE=\"%s\",DEFAULT=YES,AUTOSELECT=YES,URI=\"%s\"\n",
                     audio.getLabel(),
-                    meta.getLanguage() != null ? meta.getLanguage() : "en",
+                    meta.getLanguage() != null ? meta.getLanguage() : DEFAULT_LANGUAGE,
                     relativeUri
             ));
         }
@@ -108,7 +108,7 @@ public class MasterPlaylistJobProcessor implements JobProcessor {
             sb.append(String.format(
                     "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subtitles\",NAME=\"%s\",LANGUAGE=\"%s\",DEFAULT=NO,AUTOSELECT=YES,FORCED=NO,URI=\"%s\"\n",
                     sub.getLabel(),
-                    meta.getLanguage() != null ? meta.getLanguage() : "en",
+                    meta.getLanguage() != null ? meta.getLanguage() : DEFAULT_LANGUAGE,
                     relativeUri
             ));
         }

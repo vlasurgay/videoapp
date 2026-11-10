@@ -2,6 +2,7 @@ package videoapp.worker.processor.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import videoapp.common.config.CommonProperties;
 import videoapp.common.model.entity.ProcessingJob;
 import videoapp.common.model.entity.Video;
 import videoapp.common.model.enums.JobType;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static videoapp.common.Constants.DEFAULT_LANGUAGE;
 import static videoapp.common.model.enums.JobType.AUDIO_TRANSCRIPTION;
 
 @Slf4j
@@ -44,10 +46,11 @@ public class AudioTranscriptionJobProcessor implements JobProcessor {
     private final UploadSegmentService uploadSegmentService;
     private final PathResolver pathResolver;
     private final WorkerProperties workerProperties;
+    private final CommonProperties commonProperties;
 
     public AudioTranscriptionJobProcessor(VideoService videoService, MediaTrackService mediaTrackService, StorageProvider storageProvider,
                                           ProcessExecutor processExecutor, UploadSegmentService uploadSegmentService,
-                                          PathResolver pathResolver, WorkerProperties workerProperties) {
+                                          PathResolver pathResolver, WorkerProperties workerProperties, CommonProperties commonProperties) {
         this.videoService = videoService;
         this.mediaTrackService = mediaTrackService;
         this.storageProvider = storageProvider;
@@ -55,6 +58,7 @@ public class AudioTranscriptionJobProcessor implements JobProcessor {
         this.uploadSegmentService = uploadSegmentService;
         this.pathResolver = pathResolver;
         this.workerProperties = workerProperties;
+        this.commonProperties = commonProperties;
     }
 
     @Override
@@ -105,6 +109,11 @@ public class AudioTranscriptionJobProcessor implements JobProcessor {
     }
 
     private String resolveLanguage(String url, double startSec) {
+        if (!commonProperties.aiModeEnabled()) {
+            log.info("AI disabled, using default audio language '{}'", DEFAULT_LANGUAGE);
+            return DEFAULT_LANGUAGE;
+        }
+
         List<String> ffmpegCmd = new FfmpegCommandBuilder()
                 .setSourceUrl(url)
                 .setSourceFileStartTimeCodeSec(startSec)

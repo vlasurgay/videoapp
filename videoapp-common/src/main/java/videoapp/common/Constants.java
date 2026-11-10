@@ -24,6 +24,7 @@ public class Constants {
     public static final String PUBLIC_ID = "publicId";
     public static final String FILE_NAME = "fileName";
     public static final String ORIGIN_VIDEO_KEY = "originVideoKey";
+    public static final String DEFAULT_LANGUAGE = "default";
     public static final String TARGET_LANGUAGES = "targetLanguages";
     public static final String TARGET_RESOLUTIONS = "targetResolutions";
     public static final String TARGET_LANGUAGE = "targetLanguage";
@@ -45,4 +46,9 @@ public class Constants {
     public static final String QUALITY_240P = "240p";
 
 
-    public static final String BASIC_UPLOAD_KEY_REGEXP = "^temp/uploads/([^/]+)/([^/]+)\\.[^.]+$";}
+    public static final String BASIC_UPLOAD_KEY_REGEXP = "^temporal/([^/]+)/([^/]+)\\.[^.]+$";
+
+    //aws names
+    public static final String COMPLETE_MULTIPART_ACTION = "ObjectCreated:CompleteMultipartUpload";
+}
+

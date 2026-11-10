@@ -13,7 +13,7 @@ public interface ObjectStorage {
 
     void abortMultipartUpload(String key, String uploadId);
 
-    void moveObject(String sourceKey, String destinationKey, String destinationBucket);
+    void moveObject(String sourceKey, String destinationBucket, String destinationKey);
 
     String getObjectPresignedUrl(String key);
 
