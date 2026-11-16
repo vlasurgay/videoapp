@@ -150,7 +150,7 @@ jobs:
             docker image prune -f
           SCRIPT)
             
-          COMPOSE_B64=$(base64 -w0 deploy/docker-compose.dev.yml)
+          COMPOSE_B64=$(base64 -w0 docker-compose.dev.yml)
           
           PAYLOAD=$(REMOTE="$REMOTE" COMPOSE_B64="$COMPOSE_B64" python3 << 'PY'
           import json, os
