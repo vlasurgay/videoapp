@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import videoapp.common.config.CommonProperties;
 import videoapp.common.model.enums.DubbingLanguage;
 import videoapp.common.model.enums.JobType;
 import videoapp.common.model.processing.JobPlanningContext;
@@ -21,6 +22,12 @@ import static videoapp.common.model.enums.JobType.EXTRACT_AUDIO;
 @Component
 public class AudioDubbingJobDefinition implements JobDefinition {
 
+    private final CommonProperties commonProperties;
+
+    public AudioDubbingJobDefinition(CommonProperties commonProperties) {
+        this.commonProperties = commonProperties;
+    }
+
     @Override
     public JobType getType() {
         return AI_DUBBING;
@@ -33,8 +40,11 @@ public class AudioDubbingJobDefinition implements JobDefinition {
 
     @Override
     public boolean isRequired(JobPlanningContext context) {
-        return context.targetSettings() != null
-                && !CollectionUtils.isEmpty(context.targetSettings().getTargetLanguages());
+        return commonProperties.aiModeEnabled()
+                && context.targetSettings() != null
+                && !CollectionUtils.isEmpty(
+                        context.targetSettings().getTargetLanguages()
+        );
     }
 
     @Override

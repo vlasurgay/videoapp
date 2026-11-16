@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static videoapp.common.Constants.*;
-import static videoapp.common.model.enums.JobType.MOVE_SOURCE_VIDEO;
+import static videoapp.common.model.enums.JobType.PROMOTE_SOURCE_VIDEO;
 import static videoapp.common.model.enums.JobType.TRANSCODE;
 
 @Component
@@ -34,7 +34,7 @@ public class TranscodeJobDefinition implements JobDefinition {
 
     @Override
     public List<JobType> dependsOn() {
-        return List.of(MOVE_SOURCE_VIDEO);
+        return List.of(PROMOTE_SOURCE_VIDEO);
     }
 
     @Override

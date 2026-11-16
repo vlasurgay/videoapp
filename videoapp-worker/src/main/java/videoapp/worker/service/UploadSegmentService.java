@@ -50,7 +50,7 @@ public class UploadSegmentService {
             String uploadKey = String.format("%s/%s", baseUploadKey, relativePath);
             String label = extractLabel(rootDir, file);
 
-            storageProvider.putObject(uploadKey, file);
+            storageProvider.processed().putObject(uploadKey, file);
 
             UploadStats stats = statsMap.computeIfAbsent(label, k -> new UploadStats());
             stats.addBytes(Files.size(file));

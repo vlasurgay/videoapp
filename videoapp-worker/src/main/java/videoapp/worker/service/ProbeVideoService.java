@@ -20,7 +20,7 @@ public class ProbeVideoService {
     }
 
     public VideoMetadata probe(Long videoId, String originKey) {
-        String originDownloadUrl = storageProvider.getObjectPresignedUrl(originKey);
+        String originDownloadUrl = storageProvider.uploads().getObjectPresignedUrl(originKey);
 
         VideoMetadata videoMetadata = ffprobeClient.probe(originDownloadUrl);
 

@@ -15,22 +15,22 @@ public class S3PathResolver implements PathResolver {
 
     @Override
     public String buildTempFileKey(String publicId, String fileName) {
-        return String.format("temp/uploads/%s/%s", publicId, fileName);
+        return String.format("temporal/%s/%s", publicId, fileName);
     }
 
     @Override
     public String buildSourceFileKey(String publicId, String fileName) {
-        return String.format("videos/%s/source/%s", publicId, fileName);
+        return String.format("%s/source/%s", publicId, fileName);
     }
 
     @Override
     public String buildSourceDirKey(String publicId) {
-        return String.format("videos/%s/source", publicId);
+        return String.format("%s/source", publicId);
     }
 
     @Override
     public String buildBaseHlsDirKey(String publicId) {
-        return String.format("videos/%s/hls", publicId);
+        return String.format("%s/hls", publicId);
     }
 
     @Override
