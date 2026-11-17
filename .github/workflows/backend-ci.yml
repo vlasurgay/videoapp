@@ -171,6 +171,8 @@ jobs:
             --query "Reservations[0].Instances[0].InstanceId" \
             --output text)
           
+          echo $INSTANCE_ID
+          
           if [ -z "$INSTANCE_ID" ] || [ "$INSTANCE_ID" = "None" ]; then
             echo "no ec2 instances found"
             exit 1
