@@ -180,8 +180,11 @@ jobs:
           
           CMD_ID=$(aws ssm send-command --instance-ids "$INSTANCE_ID" \
             --document-name AWS-RunShellScript \
+            --timeout-seconds 120 \
             --parameters "$PAYLOAD" \
-            --query Command.CommandId --output text)
+            --query Command.CommandId --output text
+          )
+          echo "command id: $CMD_ID"
           
           STATUS=Pending
           for _ in $(seq 1 60); do
@@ -189,14 +192,7 @@ jobs:
             STATUS=$(
               aws ssm get-command-invocation \
               --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
-              --query Status --output text 2>/dev/null || echo Pending
-            )
+              --query Status --output text) || STATUS=Unknown
+            echo "$(date +%T) ssm: $STATUS"
             case "$STATUS" in Success|Failed|Cancelled|TimedOut) break ;; esac
           done
-          
-          aws ssm get-command-invocation \
-            --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
-            --query '[StandardOutputContent,StandardErrorContent]' --output text || true
-          
-            echo "ssm status: $STATUS"
-            [ "$STATUS" = "Success" ]
