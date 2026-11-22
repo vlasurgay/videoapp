@@ -1,4 +1,4 @@
-name: videoapp-ci
+name: videoapp
 
 env:
   ENVIRONMENT: dev
