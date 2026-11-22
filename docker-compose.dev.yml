@@ -16,6 +16,7 @@ services:
       retries: 5
 
   videoapp-web:
+    container_name: videoapp-web
     image: ${ECR_PREFIX}-web:${TAG}
     restart: unless-stopped
     env_file:
@@ -30,6 +31,7 @@ services:
         condition: service_healthy
 
   videoapp-worker:
+    container_name: videoapp-worker
     image: ${ECR_PREFIX}-worker:${TAG}
     restart: unless-stopped
     env_file:
