@@ -145,8 +145,8 @@ jobs:
           
             aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$REGISTRY"
             
-            docker compose -f docker-compose.dev.yml pull
-            docker compose -f docker-compose.dev.yml up -d --remove-orphans --wait --wait-timeout 120
+            docker compose -p videoapp -f docker-compose.dev.yml pull
+            docker compose -p videoapp -f docker-compose.dev.yml up -d --remove-orphans --wait --wait-timeout 120
             docker image prune -f
           SCRIPT)
             
