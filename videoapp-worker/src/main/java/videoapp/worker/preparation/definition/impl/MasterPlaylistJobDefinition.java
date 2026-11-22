@@ -22,7 +22,7 @@ public class MasterPlaylistJobDefinition implements JobDefinition {
 
     @Override
     public List<JobType> dependsOn() {
-        return List.of(TRANSCODE, EXTRACT_AUDIO, AI_DUBBING);
+        return List.of(TRANSCODE, EXTRACT_AUDIO, AI_DUBBING, AUDIO_TRANSCRIPTION);
     }
 
     @Override
